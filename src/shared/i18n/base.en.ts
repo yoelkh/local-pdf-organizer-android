@@ -1,0 +1,60 @@
+import type { Dictionary } from "./LanguageProvider";
+
+export const baseEn: Dictionary = {
+  "app.name": "Local PDF Organizer",
+
+  "home.title": "Every PDF tool you need, fully offline",
+  "home.subtitle":
+    "Merge, reorder, convert, and compress PDFs right on this PC. No file ever leaves your computer.",
+
+  "common.pickFiles": "Select files",
+  "common.addMore": "Add files",
+  "common.remove": "Remove",
+  "common.clear": "Clear",
+  "common.cancel": "Cancel",
+  "common.back": "Back",
+  "common.startOver": "Start over",
+  "common.openFile": "Open file",
+  "common.openFolder": "Open folder",
+  "common.processing": "Processing...",
+  "common.loadingFiles": "Reading files...",
+  "common.pages": "{n} pages",
+  "common.page": "Page {n}",
+  "common.files": "{n} files",
+  "common.options": "Options",
+  "common.rotate": "Rotate 90°",
+  "common.selectAll": "Select all",
+  "common.deselect": "Deselect",
+  "common.deleteSelected": "Delete selected ({n})",
+  "common.reset": "Reset",
+  "common.saved": "Saved",
+  "common.result": "Result",
+  "common.original": "Original",
+  "common.savings": "Saved {pct}%",
+  "common.saveAs": "Save as...",
+  "common.chooseFolder": "Choose destination folder",
+
+  "dropzone.pdf": "Drop PDF files here",
+  "dropzone.pdfSingle": "Drop one PDF file here",
+  "dropzone.image": "Drop images here",
+  "dropzone.orClick": "or click the button to browse your computer",
+  "dropzone.dropNow": "Release to add",
+  "dropzone.formats.pdf": "Formats: PDF",
+  "dropzone.formats.image": "Formats: JPG, PNG, WebP, BMP, GIF, TIFF",
+
+  "intake.skippedType": "{n} file(s) skipped because this tool does not accept that type.",
+  "intake.skippedFile": "Could not read {name}.",
+
+  "result.title": "Done!",
+  "result.savedTo": "Saved to",
+
+  "error.io": "Failed to read or write the file.",
+  "error.not_found": "File not found. It may have been moved or deleted.",
+  "error.unsupported": "Unsupported file format (encrypted PDFs are not supported yet).",
+  "error.invalid_input": "Invalid input.",
+  "error.pdf": "The PDF could not be processed. It may be corrupted.",
+  "error.image": "The image could not be processed.",
+  "error.engine": "The PDF engine is unavailable.",
+  "error.internal": "An unexpected error occurred.",
+  "error.detail": "Details",
+};
