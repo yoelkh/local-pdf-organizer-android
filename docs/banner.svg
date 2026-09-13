@@ -23,7 +23,7 @@
 
   <!-- judul -->
   <text x="256" y="112" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="52" font-weight="700" fill="#f8fafc">Local PDF Organizer</text>
-  <text x="258" y="152" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="22" fill="#cbd5e1">Merge · Organize · Convert · Compress — 100% offline, di PC Anda sendiri</text>
+  <text x="258" y="152" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="22" fill="#cbd5e1">Merge · Organize · Convert · Compress — 100% offline, right on your PC</text>
 
   <!-- pil teknologi -->
   <g font-family="Segoe UI, Inter, Arial, sans-serif" font-size="15" font-weight="600">

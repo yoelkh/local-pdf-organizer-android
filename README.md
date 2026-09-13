@@ -3,12 +3,11 @@
 </p>
 
 <p align="center">
-  <a href="#-fitur">Fitur</a> ·
-  <a href="#-instalasi">Instalasi</a> ·
-  <a href="#-cara-pakai">Cara pakai</a> ·
-  <a href="#-untuk-developer">Untuk developer</a> ·
-  <a href="#-arsitektur">Arsitektur</a> ·
-  <a href="#english">English</a>
+  <a href="#-features">Features</a> ·
+  <a href="#-installation">Installation</a> ·
+  <a href="#-how-to-use">How to use</a> ·
+  <a href="#-for-developers">For developers</a> ·
+  <a href="#-architecture">Architecture</a>
 </p>
 
 <p align="center">
@@ -19,151 +18,134 @@
   <img alt="License" src="https://img.shields.io/badge/license-MIT-22c55e">
 </p>
 
-**Local PDF Organizer** adalah aplikasi desktop ala iLovePDF yang berjalan **100% offline** di PC Anda.
-Tidak ada upload, tidak ada batas ukuran, tidak ada file yang meninggalkan komputer.
+**Local PDF Organizer** is an iLovePDF-style desktop app that runs **100% offline** on your PC.
+No uploads, no size limits, and no file ever leaves your computer.
 
 ---
 
-## ✨ Fitur
+## ✨ Features
 
-| | Alat | Yang bisa dilakukan |
+| | Tool | What it does |
 |:-:|---|---|
-| 🧩 | **Gabungkan PDF** | Satukan banyak PDF; urutan diatur dengan drag and drop. |
-| 🗂️ | **Atur Halaman** | Urutkan ulang, putar, hapus, atau sisipkan halaman dari PDF lain. Pilih banyak halaman sekaligus. |
-| 🖼️ | **Gambar → PDF** | JPG, PNG, WebP, BMP, GIF, TIFF menjadi PDF. Pilihan ukuran halaman, orientasi, margin. |
-| 📷 | **PDF → Gambar** | Render halaman ke PNG/JPG pada 72/150/300 dpi, pilih rentang halaman, opsi ZIP. |
-| 🗜️ | **Kompres PDF** | Tiga level (ringan / disarankan / ekstrem) dengan laporan ukuran sebelum → sesudah. |
+| 🧩 | **Merge PDF** | Combine several PDFs; set the order with drag and drop. |
+| 🗂️ | **Organize Pages** | Reorder, rotate, delete, or insert pages from other PDFs. Select many pages at once. |
+| 🖼️ | **Images → PDF** | Turn JPG, PNG, WebP, BMP, GIF, and TIFF into a PDF. Choose page size, orientation, and margins. |
+| 📷 | **PDF → Images** | Render pages to PNG/JPG at 72/150/300 dpi, pick a page range, optionally bundle as ZIP. |
+| 🗜️ | **Compress PDF** | Three levels (low / recommended / extreme) with a before → after size report. |
 
-Bonus: antarmuka **Bahasa Indonesia** dan **English** (toggle di pojok kanan atas), thumbnail halaman, drag file langsung dari File Explorer.
-
----
-
-## 📦 Instalasi
-
-Butuh Windows 10/11 dengan WebView2 (sudah bawaan Windows 11).
-
-**Opsi 1 — Installer (paling mudah)**
-
-1. Unduh `Local PDF Organizer_x.y.z_x64-setup.exe` dari halaman [Releases](../../releases).
-2. Jalankan, ikuti langkahnya, selesai.
-
-**Opsi 2 — Build sendiri** → lihat [Untuk developer](#-untuk-developer).
+Also included: **English** and **Bahasa Indonesia** UI (toggle in the header), page thumbnails, and drag-and-drop straight from File Explorer.
 
 ---
 
-## 🚀 Cara pakai
+## 📦 Installation
 
-1. Buka aplikasi dan pilih alat di beranda.
-2. **Seret file** ke jendela aplikasi, atau klik **Pilih file**.
-3. Atur urutan/opsi sesuai kebutuhan (semua drag and drop).
-4. Klik tombol aksi, pilih lokasi simpan, dan hasilnya langsung bisa dibuka.
+Requires Windows 10/11 with WebView2 (preinstalled on Windows 11).
 
-> 💡 Di **Atur Halaman**, klik halaman untuk memilih, lalu putar atau hapus banyak halaman sekaligus. Tombol **Tambah file** menyisipkan halaman dari PDF lain.
+**Option 1 — Installer (easiest)**
+
+1. Download `Local.PDF.Organizer_x.y.z_x64-setup.exe` from the [Releases](../../releases) page.
+2. Run it, follow the steps, done.
+
+**Option 2 — Build from source** → see [For developers](#-for-developers).
 
 ---
 
-## 🛠️ Untuk developer
+## 🚀 How to use
 
-### Prasyarat
+1. Open the app and pick a tool on the home screen.
+2. **Drag files** into the window, or click **Select files**.
+3. Arrange the order and options as you like (everything is drag and drop).
+4. Click the action button, choose where to save, and open the result right away.
 
-| Alat | Versi |
+> 💡 In **Organize Pages**, click a page to select it, then rotate or delete many pages at once. **Add files** inserts pages from another PDF.
+
+---
+
+## 🛠️ For developers
+
+### Prerequisites
+
+| Tool | Version |
 |---|---|
 | [Node.js](https://nodejs.org) | ≥ 20 |
 | [Rust](https://rustup.rs) | stable, target `x86_64-pc-windows-msvc` |
-| Visual Studio Build Tools | komponen *Desktop development with C++* |
+| Visual Studio Build Tools | *Desktop development with C++* workload |
 
-`pdfium.dll` sudah disertakan di `src-tauri/pdfium/` (dari [pdfium-binaries](https://github.com/bblanchon/pdfium-binaries)).
+`pdfium.dll` is already included in `src-tauri/pdfium/` (from [pdfium-binaries](https://github.com/bblanchon/pdfium-binaries)).
 
-### Jalankan
+### Run
 
 ```bash
 npm install
 npm run tauri dev
 ```
 
-Kompilasi Rust pertama memakan beberapa menit; setelah itu perubahan frontend di-*hot reload*.
+The first Rust compile takes a few minutes; after that, frontend changes hot-reload.
 
-### Build installer
+### Build the installer
 
 ```bash
 npm run tauri build
 ```
 
-Hasil ada di `src-tauri/target/release/bundle/nsis/`.
+The output lands in `src-tauri/target/release/bundle/nsis/`.
 
-### Uji
+### Test
 
 ```bash
-cd src-tauri && cargo test        # 28 test: service, layout, kompresi, pipeline PDFium
-npm run build                     # type-check + build frontend
-npm run lint:deps                 # aturan modularitas antar fitur
+cd src-tauri && cargo test        # 28 tests: services, layout, compression, PDFium pipeline
+npm run build                     # type-check + frontend build
+npm run lint:deps                 # cross-feature import rule
 ```
 
-File contoh untuk uji manual: `cd src-tauri && cargo run --example make_samples` → folder `samples/`.
+Sample files for manual testing: `cd src-tauri && cargo run --example make_samples` → `samples/` folder.
 
 ---
 
-## 🏗️ Arsitektur
+## 🏗️ Architecture
 
 ```
 ┌──────────────── Frontend (React + TS + Tailwind) ────────────────┐
-│  src/app        router, header, toggle bahasa                     │
-│  src/features   satu folder per alat  ──►  registry.ts            │
-│  src/shared     ipc, intake file, i18n, komponen UI               │
+│  src/app        router, header, language toggle                   │
+│  src/features   one folder per tool  ──►  registry.ts             │
+│  src/shared     ipc, file intake, i18n, UI components             │
 └──────────────────────────────┬────────────────────────────────────┘
-                               │  invoke(command) · event "progress"
+                               │  invoke(command) · "progress" event
 ┌──────────────────────────────▼────────────────────────────────────┐
-│  src-tauri/src/features   satu folder per alat ──► features/mod.rs │
-│  src-tauri/src/core       engine PDFium (thread khusus), lopdf,    │
-│                           image, registry file, cache, error       │
+│  src-tauri/src/features   one folder per tool ──► features/mod.rs  │
+│  src-tauri/src/core       PDFium engine (dedicated thread), lopdf, │
+│                           image, file registry, cache, errors      │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-Prinsipnya sederhana:
+The rules are simple:
 
-- **Satu fitur = satu folder** di backend *dan* frontend (types · service · commands / index · i18n · ipc · Page).
-- **Fitur tidak saling mengimpor.** Kode bersama tinggal di `core` (Rust) atau `shared` (TS). Diperiksa otomatis oleh `npm run lint:deps`.
-- **Registrasi satu baris.** Menambah alat baru = buat folder + satu baris di `features/mod.rs` dan satu baris di `features/registry.ts`. Beranda, menu, router, dan kamus bahasa mengikuti otomatis.
+- **One feature = one folder** on both the backend *and* the frontend (types · service · commands / index · i18n · ipc · Page).
+- **Features never import each other.** Shared code lives in `core` (Rust) or `shared` (TS). Enforced automatically by `npm run lint:deps`.
+- **One-line registration.** Adding a tool = create a folder + one line in `features/mod.rs` and one line in `features/registry.ts`. The home grid, menu, router, and translations follow automatically.
 
-Lebih detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/ADDING_A_FEATURE.md](docs/ADDING_A_FEATURE.md)
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/ADDING_A_FEATURE.md](docs/ADDING_A_FEATURE.md)
 
-### Teknologi
+### Tech stack
 
-| Lapisan | Pilihan |
+| Layer | Choice |
 |---|---|
-| Shell desktop | [Tauri 2](https://tauri.app) (WebView2) |
-| Render & salin halaman | [PDFium](https://pdfium.googlesource.com/pdfium/) via `pdfium-render` |
-| Manipulasi struktur PDF | `lopdf` |
-| Decode/encode gambar | `image` |
+| Desktop shell | [Tauri 2](https://tauri.app) (WebView2) |
+| Rendering & page copying | [PDFium](https://pdfium.googlesource.com/pdfium/) via `pdfium-render` |
+| PDF structure edits | `lopdf` |
+| Image decode/encode | `image` |
 | UI | React 19, TypeScript, Tailwind CSS 4, dnd-kit, lucide-react |
 
 ---
 
-## ⚠️ Batasan saat ini
+## ⚠️ Current limitations
 
-- PDF terenkripsi (berkata sandi) belum didukung.
-- Merge/organize menyalin anotasi, tetapi formulir interaktif (AcroForm) bisa hilang.
-- Kompresi paling efektif untuk PDF hasil scan/foto; PDF teks murni hanya berkurang sedikit.
-
----
-
-## 📄 Lisensi
-
-[MIT](LICENSE). PDFium dibundel di bawah lisensi BSD-3-Clause.
+- Encrypted (password-protected) PDFs are not supported yet.
+- Merge/organize copies annotations, but interactive forms (AcroForm) may be lost.
+- Compression works best on scanned or photo-heavy PDFs; text-only PDFs shrink only slightly.
 
 ---
 
-<a id="english"></a>
-## 🇬🇧 English
+## 📄 License
 
-**Local PDF Organizer** is an iLovePDF-style desktop app that runs **100% offline** on Windows.
-Merge PDFs, reorder/rotate/delete pages with drag and drop, convert images ↔ PDF, and compress —
-nothing ever leaves your computer.
-
-- **Install:** grab the installer from [Releases](../../releases), or build with `npm install && npm run tauri build`.
-- **Develop:** `npm run tauri dev` (needs Node ≥ 20, Rust stable, MSVC Build Tools).
-- **Stack:** Tauri 2 · Rust (PDFium, lopdf, image) · React 19 + TypeScript + Tailwind.
-- **Structure:** one feature = one folder on both sides, no cross-feature imports, one-line registration.
-  See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/ADDING_A_FEATURE.md](docs/ADDING_A_FEATURE.md).
-
-The UI ships in Indonesian and English (toggle in the header).
+[MIT](LICENSE). PDFium is bundled under the BSD-3-Clause license.
