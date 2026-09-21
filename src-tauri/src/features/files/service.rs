@@ -37,6 +37,11 @@ pub async fn thumbnail(
             tauri::async_runtime::spawn_blocking(move || -> AppResult<DynamicImage> {
                 let decoded = images::decode_file(&path)?;
                 let flat = DynamicImage::ImageRgb8(images::flatten_to_rgb(&decoded.image));
+                // Jangan memperbesar gambar melebihi ukuran aslinya (penampil besar
+                // meminta lebar tinggi; gambar kecil cukup dikirim apa adanya).
+                if flat.width() <= width {
+                    return Ok(flat);
+                }
                 Ok(images::thumbnail_width(&flat, width))
             })
             .await

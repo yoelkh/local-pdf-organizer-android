@@ -9,12 +9,15 @@ import { formatBytes, stripExtension } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
+import { FilePagesViewer } from "@/shared/ui/FilePagesViewer";
+import { GridToolbar } from "@/shared/ui/GridToolbar";
 import { OptionGroup } from "@/shared/ui/OptionGroup";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
 import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
+import { useThumbSize } from "@/shared/ui/useThumbSize";
 import { imagesToPdf, type ImagesToPdfOptions, type Margin, type Orientation, type PageSizeOption } from "./ipc";
 
 const ACCEPT = ["image"] as const;
@@ -31,6 +34,8 @@ export function ImagesToPdfPage() {
   });
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<OutputInfo | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const thumbSize = useThumbSize("imagesToPdf", 220);
 
   const hasFiles = intake.files.length > 0;
 
@@ -71,6 +76,7 @@ export function ImagesToPdfPage() {
   return (
     <>
       <ProgressOverlay visible={busy} label={t("common.processing")} />
+      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} />
       <ToolLayout
         title={t("imagesToPdf.title")}
         description={t("imagesToPdf.description")}
@@ -110,7 +116,6 @@ export function ImagesToPdfPage() {
                   { value: "big", label: t("imagesToPdf.margin.big") },
                 ]}
               />
-              <p className="text-xs text-slate-500">{t("imagesToPdf.hint")}</p>
               <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy} icon={<Images size={18} />}>
                 {t("imagesToPdf.action")}
               </Button>
@@ -126,13 +131,22 @@ export function ImagesToPdfPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="amber" compact />
+            <GridToolbar thumbSize={thumbSize}>{t("view.hintFiles")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}
               onReorder={intake.reorder}
-              className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              className="grid gap-4"
+              style={thumbSize.gridStyle}
               renderItem={(file, index, { isDragging }) => (
-                <FileCard file={file} index={index} onRemove={intake.remove} isDragging={isDragging} />
+                <FileCard
+                  file={file}
+                  index={index}
+                  onRemove={intake.remove}
+                  onView={setViewing}
+                  isDragging={isDragging}
+                  thumbWidth={thumbSize.renderWidth}
+                />
               )}
             />
           </div>

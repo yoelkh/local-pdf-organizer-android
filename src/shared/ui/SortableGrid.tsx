@@ -27,6 +27,8 @@ interface Props<T> {
   onReorder: (from: number, to: number) => void;
   renderItem: (item: T, index: number, state: SortableRenderState) => ReactNode;
   className?: string;
+  /** Style tambahan untuk kontainer grid (mis. kolom dinamis). */
+  style?: CSSProperties;
   disabled?: boolean;
 }
 
@@ -40,6 +42,7 @@ export function SortableGrid<T>({
   onReorder,
   renderItem,
   className = "",
+  style,
   disabled = false,
 }: Props<T>) {
   const sensors = useSensors(
@@ -59,7 +62,7 @@ export function SortableGrid<T>({
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={ids} strategy={rectSortingStrategy} disabled={disabled}>
-        <div className={className}>
+        <div className={className} style={style}>
           {items.map((item, index) => (
             <SortableItem key={ids[index]} id={ids[index]} disabled={disabled}>
               {(state) => renderItem(item, index, state)}

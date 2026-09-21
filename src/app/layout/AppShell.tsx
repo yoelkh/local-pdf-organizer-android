@@ -6,7 +6,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex h-full flex-col">
       <Header />
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-6xl px-6 py-8">{children}</div>
+        <div className="mx-auto w-full max-w-[1700px] px-6 py-8">{children}</div>
       </main>
     </div>
   );

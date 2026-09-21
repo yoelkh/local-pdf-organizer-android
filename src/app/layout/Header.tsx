@@ -12,7 +12,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-14 w-full max-w-[1700px] items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-rose-500 text-white">
             <FileText size={18} />

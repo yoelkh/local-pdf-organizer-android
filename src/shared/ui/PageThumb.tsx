@@ -30,14 +30,14 @@ export function PageThumb({ fileId, page = 0, width = 240, className = "", alt =
 
   if (failed) {
     return (
-      <div className={`grid place-items-center bg-slate-100 text-slate-400 ${className}`}>
+      <div className={`grid h-full w-full place-items-center rounded bg-slate-100 text-slate-400 ${className}`}>
         <ImageOff size={24} />
       </div>
     );
   }
   if (!src) {
     return (
-      <div className={`grid animate-pulse place-items-center bg-slate-100 text-slate-300 ${className}`}>
+      <div className={`grid h-full w-full animate-pulse place-items-center rounded bg-slate-100 text-slate-300 ${className}`}>
         <FileText size={24} />
       </div>
     );

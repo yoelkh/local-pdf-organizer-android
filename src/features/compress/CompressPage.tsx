@@ -8,12 +8,15 @@ import { formatBytes, parentDir, savingsPercent, stripExtension } from "@/shared
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
+import { FilePagesViewer } from "@/shared/ui/FilePagesViewer";
+import { GridToolbar } from "@/shared/ui/GridToolbar";
 import { OptionGroup } from "@/shared/ui/OptionGroup";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
 import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
+import { useThumbSize } from "@/shared/ui/useThumbSize";
 import { compressPdf, type CompressLevel, type CompressResult } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -27,6 +30,8 @@ export function CompressPage() {
   const [level, setLevel] = useState<CompressLevel>("recommended");
   const [busy, setBusy] = useState<{ name: string; current: number; total: number } | null>(null);
   const [results, setResults] = useState<CompressResult[] | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const thumbSize = useThumbSize("compress", 220);
 
   const hasFiles = intake.files.length > 0;
 
@@ -130,6 +135,7 @@ export function CompressPage() {
         current={busy && busy.total > 1 ? busy.current : undefined}
         total={busy && busy.total > 1 ? busy.total : undefined}
       />
+      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} />
       <ToolLayout
         title={t("compress.title")}
         description={t("compress.description")}
@@ -165,13 +171,21 @@ export function CompressPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="emerald" compact />
+            <GridToolbar thumbSize={thumbSize}>{t("view.hintFilesPlain")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}
               onReorder={intake.reorder}
-              className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              className="grid gap-4"
+              style={thumbSize.gridStyle}
               renderItem={(file, _index, { isDragging }) => (
-                <FileCard file={file} onRemove={intake.remove} isDragging={isDragging} />
+                <FileCard
+                  file={file}
+                  onRemove={intake.remove}
+                  onView={setViewing}
+                  isDragging={isDragging}
+                  thumbWidth={thumbSize.renderWidth}
+                />
               )}
             />
           </div>

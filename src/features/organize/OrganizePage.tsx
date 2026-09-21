@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { CheckSquare, LayoutGrid, RotateCw, Square, Trash2, Undo2, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CheckSquare, LayoutGrid, MoveLeft, MoveRight, RotateCw, Square, Trash2, Undo2, X } from "lucide-react";
 import { useFileIntake } from "@/shared/files/useFileIntake";
 import { pickSavePath } from "@/shared/files/dialogs";
 import { useT } from "@/shared/i18n/useT";
@@ -9,11 +9,14 @@ import { formatBytes, stripExtension } from "@/shared/lib/format";
 import { sourceTagClass } from "@/shared/lib/colors";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
+import { GridToolbar } from "@/shared/ui/GridToolbar";
+import { PageViewer, type ViewerItem } from "@/shared/ui/PageViewer";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
 import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
+import { useThumbSize } from "@/shared/ui/useThumbSize";
 import { PageTile } from "./components/PageTile";
 import { usePageBoard } from "./hooks/usePageBoard";
 import { organizePdf } from "./ipc";
@@ -28,9 +31,38 @@ export function OrganizePage() {
   const board = usePageBoard(intake.files);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<OutputInfo | null>(null);
+  const [viewKey, setViewKey] = useState<string | null>(null);
+  const thumbSize = useThumbSize("organize", 210);
 
   const hasFiles = intake.files.length > 0;
   const selectedCount = board.selected.size;
+
+  // Penampil halaman besar mengikuti urutan papan saat ini.
+  const viewerItems = useMemo<ViewerItem[]>(() => {
+    const names = new Map(intake.files.map((f) => [f.id, f.name]));
+    return board.pages.map((p) => ({
+      key: p.key,
+      fileId: p.fileId,
+      page: p.page,
+      rotation: p.rotation,
+      title: names.get(p.fileId) ?? "",
+      subtitle: t("common.page", { n: p.page + 1 }),
+    }));
+  }, [board.pages, intake.files, t]);
+  const viewIndex = viewKey ? board.pages.findIndex((p) => p.key === viewKey) : -1;
+
+  function removeFromViewer(key: string) {
+    const i = board.pages.findIndex((p) => p.key === key);
+    const neighbor = board.pages[i + 1] ?? board.pages[i - 1];
+    board.remove(key);
+    setViewKey(neighbor ? neighbor.key : null);
+  }
+
+  function moveInViewer(delta: -1 | 1) {
+    const target = viewIndex + delta;
+    if (viewIndex < 0 || target < 0 || target >= board.pages.length) return;
+    board.reorder(viewIndex, target);
+  }
 
   async function run() {
     if (board.pages.length === 0) {
@@ -74,6 +106,40 @@ export function OrganizePage() {
   return (
     <>
       <ProgressOverlay visible={busy} label={t("common.processing")} />
+      {viewIndex >= 0 && (
+        <PageViewer
+          items={viewerItems}
+          index={viewIndex}
+          onIndexChange={(i) => setViewKey(board.pages[i]?.key ?? null)}
+          onClose={() => setViewKey(null)}
+          onRotate={(item) => board.rotate(item.key)}
+          onRemove={(item) => removeFromViewer(item.key)}
+          extraActions={
+            <>
+              <button
+                type="button"
+                onClick={() => moveInViewer(-1)}
+                disabled={viewIndex <= 0}
+                title={t("organize.moveEarlier")}
+                aria-label={t("organize.moveEarlier")}
+                className="grid h-9 w-9 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <MoveLeft size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={() => moveInViewer(1)}
+                disabled={viewIndex >= board.pages.length - 1}
+                title={t("organize.moveLater")}
+                aria-label={t("organize.moveLater")}
+                className="grid h-9 w-9 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <MoveRight size={18} />
+              </button>
+            </>
+          }
+        />
+      )}
       <ToolLayout
         title={t("organize.title")}
         description={t("organize.description")}
@@ -110,7 +176,6 @@ export function OrganizePage() {
 
               <div className="border-t border-slate-100 pt-4">
                 <p className="text-sm text-slate-700">{t("organize.pagesInResult", { n: board.pages.length })}</p>
-                <p className="mt-1 text-xs text-slate-500">{t("organize.hint")}</p>
               </div>
 
               <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
@@ -149,13 +214,17 @@ export function OrganizePage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="violet" compact />
+            <GridToolbar thumbSize={thumbSize}>{t("organize.hint")}</GridToolbar>
             <SortableGrid
               items={board.pages}
               getId={(p) => p.key}
               onReorder={board.reorder}
-              className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(150px,1fr))]"
+              className="grid gap-3"
+              style={thumbSize.gridStyle}
               renderItem={(page, index, { isDragging }) => (
                 <PageTile
+                  thumbWidth={thumbSize.renderWidth}
+                  onView={setViewKey}
                   page={page}
                   position={index}
                   sourceIndex={board.sourceIndex.get(page.fileId) ?? 0}

@@ -8,6 +8,7 @@ import { newJobId, onProgress } from "@/shared/ipc/events";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
+import { FilePagesViewer } from "@/shared/ui/FilePagesViewer";
 import { OptionGroup } from "@/shared/ui/OptionGroup";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
@@ -32,6 +33,7 @@ export function PdfToImagesPage() {
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<PdfToImagesResult | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
 
   const file = intake.files[0];
 
@@ -91,6 +93,7 @@ export function PdfToImagesPage() {
         current={progress?.current}
         total={progress?.total}
       />
+      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} />
       <ToolLayout
         title={t("pdfToImages.title")}
         description={t("pdfToImages.description")}
@@ -148,8 +151,9 @@ export function PdfToImagesPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} single isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="sky" compact />
-            <div className="max-w-xs">
-              <FileCard file={file} onRemove={intake.remove} />
+            <p className="text-xs text-slate-500">{t("view.hintFilesPlain")}</p>
+            <div className="max-w-sm">
+              <FileCard file={file} onRemove={intake.remove} onView={setViewing} thumbWidth={560} />
             </div>
           </div>
         )}

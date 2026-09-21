@@ -45,6 +45,25 @@ export const baseEn: Dictionary = {
   "intake.skippedType": "{n} file(s) skipped because this tool does not accept that type.",
   "intake.skippedFile": "Could not read {name}.",
 
+  "view.open": "View full size",
+  "view.thumbSize": "Thumbnail size",
+  "view.smaller": "Smaller thumbnails",
+  "view.larger": "Larger thumbnails",
+  "view.hintFiles": "Drag cards to reorder · double-click or the eye icon to look inside.",
+  "view.hintFilesPlain": "Double-click or use the eye icon to look inside a file.",
+
+  "viewer.position": "{n} of {total}",
+  "viewer.pageOf": "Page {n} / {total}",
+  "viewer.prev": "Previous (left arrow)",
+  "viewer.next": "Next (right arrow)",
+  "viewer.zoomIn": "Zoom in (+)",
+  "viewer.zoomOut": "Zoom out (-)",
+  "viewer.fit": "Fit to screen (0)",
+  "viewer.close": "Close (Esc)",
+  "viewer.failed": "This page could not be displayed.",
+  "viewer.hint": "Left/right arrows: change page · + / -: zoom · 0: fit · Esc: close",
+  "viewer.hintEdit": "Left/right arrows: change page · + / -: zoom · 0: fit · R: rotate · Del: delete · Esc: close",
+
   "result.title": "Done!",
   "result.savedTo": "Saved to",
 

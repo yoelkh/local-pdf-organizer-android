@@ -46,6 +46,25 @@ export const baseId: Dictionary = {
   "intake.skippedType": "{n} file dilewati karena jenisnya tidak didukung di alat ini.",
   "intake.skippedFile": "Tidak bisa membaca {name}.",
 
+  "view.open": "Lihat ukuran besar",
+  "view.thumbSize": "Ukuran thumbnail",
+  "view.smaller": "Perkecil thumbnail",
+  "view.larger": "Perbesar thumbnail",
+  "view.hintFiles": "Seret kartu untuk mengurutkan · klik ganda atau ikon mata untuk melihat isinya.",
+  "view.hintFilesPlain": "Klik ganda atau ikon mata untuk melihat isi file.",
+
+  "viewer.position": "{n} dari {total}",
+  "viewer.pageOf": "Hal. {n} / {total}",
+  "viewer.prev": "Sebelumnya (panah kiri)",
+  "viewer.next": "Berikutnya (panah kanan)",
+  "viewer.zoomIn": "Perbesar (+)",
+  "viewer.zoomOut": "Perkecil (-)",
+  "viewer.fit": "Pas layar (0)",
+  "viewer.close": "Tutup (Esc)",
+  "viewer.failed": "Halaman tidak bisa ditampilkan.",
+  "viewer.hint": "Panah kiri/kanan: pindah halaman · + / -: zoom · 0: pas layar · Esc: tutup",
+  "viewer.hintEdit": "Panah kiri/kanan: pindah halaman · + / -: zoom · 0: pas layar · R: putar · Del: hapus · Esc: tutup",
+
   "result.title": "Selesai!",
   "result.savedTo": "Disimpan di",
 

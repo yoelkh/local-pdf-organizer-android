@@ -9,11 +9,14 @@ import { formatBytes, stripExtension } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
+import { FilePagesViewer } from "@/shared/ui/FilePagesViewer";
+import { GridToolbar } from "@/shared/ui/GridToolbar";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
 import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
+import { useThumbSize } from "@/shared/ui/useThumbSize";
 import { mergePdfs } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -24,6 +27,8 @@ export function MergePage() {
   const intake = useFileIntake({ accept: [...ACCEPT] });
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<OutputInfo | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const thumbSize = useThumbSize("merge", 220);
 
   const totalPages = intake.files.reduce((sum, f) => sum + f.pages, 0);
   const canMerge = intake.files.length >= 2 && !busy;
@@ -69,6 +74,7 @@ export function MergePage() {
   return (
     <>
       <ProgressOverlay visible={busy} label={t("common.processing")} />
+      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} />
       <ToolLayout
         title={t("merge.title")}
         description={t("merge.description")}
@@ -85,7 +91,6 @@ export function MergePage() {
                   {t("merge.summary", { files: intake.files.length, pages: totalPages })}
                 </p>
               </div>
-              <p className="text-xs text-slate-500">{t("merge.hint")}</p>
               <Button size="lg" onClick={run} disabled={!canMerge} icon={<Layers size={18} />}>
                 {t("merge.action")}
               </Button>
@@ -114,13 +119,22 @@ export function MergePage() {
               accent="rose"
               compact
             />
+            <GridToolbar thumbSize={thumbSize}>{t("view.hintFiles")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}
               onReorder={intake.reorder}
-              className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              className="grid gap-4"
+              style={thumbSize.gridStyle}
               renderItem={(file, index, { isDragging }) => (
-                <FileCard file={file} index={index} onRemove={intake.remove} isDragging={isDragging} />
+                <FileCard
+                  file={file}
+                  index={index}
+                  onRemove={intake.remove}
+                  onView={setViewing}
+                  isDragging={isDragging}
+                  thumbWidth={thumbSize.renderWidth}
+                />
               )}
             />
           </div>

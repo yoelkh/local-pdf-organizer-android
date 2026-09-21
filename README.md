@@ -33,7 +33,11 @@ No uploads, no size limits, and no file ever leaves your computer.
 | 📷 | **PDF → Images** | Render pages to PNG/JPG at 72/150/300 dpi, pick a page range, optionally bundle as ZIP. |
 | 🗜️ | **Compress PDF** | Three levels (low / recommended / extreme) with a before → after size report. |
 
-Also included: **English** and **Bahasa Indonesia** UI (toggle in the header), page thumbnails, and drag-and-drop straight from File Explorer.
+Also included:
+
+- 🔍 **Full-size page viewer** in every tool: double-click a page or hit the eye icon, then browse with the arrow keys, zoom, rotate, delete, or move a page without leaving the viewer.
+- 🔠 **Adjustable thumbnail size**: a slider above every grid, from compact overview to large previews. Your choice is remembered per tool.
+- 🌐 **English** and **Bahasa Indonesia** UI (toggle in the header), plus drag-and-drop straight from File Explorer.
 
 ---
 
@@ -58,6 +62,8 @@ Requires Windows 10/11 with WebView2 (preinstalled on Windows 11).
 4. Click the action button, choose where to save, and open the result right away.
 
 > 💡 In **Organize Pages**, click a page to select it, then rotate or delete many pages at once. **Add files** inserts pages from another PDF.
+>
+> 🔍 Can't tell pages apart? Drag the **thumbnail size** slider, or **double-click** any page to open it full size. Viewer keys: `←` `→` change page · `+` `-` zoom · `0` fit · `R` rotate · `Del` delete · `Esc` close.
 
 ---
 
