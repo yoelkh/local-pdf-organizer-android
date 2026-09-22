@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Minimize2 } from "lucide-react";
+import { useHandoffActions } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
 import { pickFolder, pickSavePath } from "@/shared/files/dialogs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
-import { formatBytes, parentDir, savingsPercent, stripExtension } from "@/shared/lib/format";
+import { formatBytes, joinPath, parentDir, savingsPercent, stripExtension } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
@@ -32,6 +33,7 @@ export function CompressPage() {
   const [results, setResults] = useState<CompressResult[] | null>(null);
   const [viewing, setViewing] = useState<string | null>(null);
   const thumbSize = useThumbSize("compress", 220);
+  const nextActions = useHandoffActions("compress", "pdf", results ? results.map((r) => r.path) : []);
 
   const hasFiles = intake.files.length > 0;
 
@@ -51,7 +53,7 @@ export function CompressPage() {
       if (!dir) return;
       targets = files.map((f) => ({
         id: f.id,
-        outPath: `${dir}\\${stripExtension(f.name)}${t("compress.suffix")}.pdf`,
+        outPath: joinPath(dir, `${stripExtension(f.name)}${t("compress.suffix")}.pdf`),
         name: f.name,
       }));
     }
@@ -88,6 +90,7 @@ export function CompressPage() {
         filePath={single?.path}
         folderPath={single ? undefined : parentDir(results[0].path)}
         onStartOver={startOver}
+        nextActions={nextActions}
       >
         <table className="w-full text-sm">
           <tbody>
@@ -103,9 +106,7 @@ export function CompressPage() {
                   </td>
                   <td className="whitespace-nowrap py-2 text-right">
                     {r.unchanged ? (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                        {t("compress.unchanged")}
-                      </span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{t("compress.unchanged")}</span>
                     ) : (
                       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
                         {t("compress.saved", { pct })}
@@ -135,7 +136,7 @@ export function CompressPage() {
         current={busy && busy.total > 1 ? busy.current : undefined}
         total={busy && busy.total > 1 ? busy.total : undefined}
       />
-      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} />
+      <FilePagesViewer files={intake.files} openFileId={viewing} onClose={() => setViewing(null)} onRemoveFile={intake.remove} />
       <ToolLayout
         title={t("compress.title")}
         description={t("compress.description")}
@@ -146,6 +147,7 @@ export function CompressPage() {
             <>
               <OptionGroup<CompressLevel>
                 label={t("compress.level")}
+                accent="emerald"
                 value={level}
                 onChange={setLevel}
                 layout="stack"
@@ -179,13 +181,7 @@ export function CompressPage() {
               className="grid gap-4"
               style={thumbSize.gridStyle}
               renderItem={(file, _index, { isDragging }) => (
-                <FileCard
-                  file={file}
-                  onRemove={intake.remove}
-                  onView={setViewing}
-                  isDragging={isDragging}
-                  thumbWidth={thumbSize.renderWidth}
-                />
+                <FileCard file={file} onRemove={intake.remove} onView={setViewing} isDragging={isDragging} thumbWidth={thumbSize.renderWidth} />
               )}
             />
           </div>

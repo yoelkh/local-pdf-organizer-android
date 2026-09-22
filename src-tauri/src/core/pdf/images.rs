@@ -13,9 +13,38 @@ use image::{
 
 use crate::core::error::AppResult;
 
-/// Dimensi (lebar, tinggi) tanpa mendecode seluruh gambar.
+/// Dimensi (lebar, tinggi) tanpa mendecode seluruh gambar, **tanpa** koreksi EXIF.
 pub fn dimensions(path: &Path) -> AppResult<(u32, u32)> {
     Ok(image::image_dimensions(path)?)
+}
+
+/// Dimensi tampil (lebar, tinggi) setelah orientasi EXIF diterapkan,
+/// hanya membaca header (tidak mendecode piksel).
+pub fn dimensions_oriented(path: &Path) -> AppResult<(u32, u32)> {
+    let mut decoder = ImageReader::open(path)?.with_guessed_format()?.into_decoder()?;
+    let (w, h) = decoder.dimensions();
+    let orientation = decoder.orientation().unwrap_or(Orientation::NoTransforms);
+    Ok(if swaps_axes(orientation) { (h, w) } else { (w, h) })
+}
+
+/// `true` bila orientasi EXIF menukar lebar dan tinggi.
+pub fn swaps_axes(orientation: Orientation) -> bool {
+    matches!(
+        orientation,
+        Orientation::Rotate90 | Orientation::Rotate270 | Orientation::Rotate90FlipH | Orientation::Rotate270FlipH
+    )
+}
+
+/// Derajat rotasi searah jarum jam bila orientasi EXIF hanya berupa rotasi murni
+/// (tanpa cermin). `None` untuk varian flip/mirror.
+pub fn orientation_degrees(orientation: Orientation) -> Option<u16> {
+    match orientation {
+        Orientation::NoTransforms => Some(0),
+        Orientation::Rotate90 => Some(90),
+        Orientation::Rotate180 => Some(180),
+        Orientation::Rotate270 => Some(270),
+        _ => None,
+    }
 }
 
 pub fn is_jpeg(bytes: &[u8]) -> bool {
@@ -62,8 +91,8 @@ pub fn jpeg_components(bytes: &[u8]) -> Option<u8> {
 pub struct Decoded {
     pub image: DynamicImage,
     pub format: Option<ImageFormat>,
-    /// `true` bila metadata EXIF meminta rotasi/flip dan sudah diterapkan.
-    pub reoriented: bool,
+    /// Orientasi EXIF asal. `image` sudah dikoreksi sesuai orientasi ini.
+    pub orientation: Orientation,
 }
 
 /// Decode dari bytes dan terapkan orientasi EXIF bila ada.
@@ -73,11 +102,10 @@ pub fn decode(bytes: &[u8]) -> AppResult<Decoded> {
     let mut decoder = reader.into_decoder()?;
     let orientation = decoder.orientation().unwrap_or(Orientation::NoTransforms);
     let mut image = DynamicImage::from_decoder(decoder)?;
-    let reoriented = orientation != Orientation::NoTransforms;
-    if reoriented {
+    if orientation != Orientation::NoTransforms {
         image.apply_orientation(orientation);
     }
-    Ok(Decoded { image, format, reoriented })
+    Ok(Decoded { image, format, orientation })
 }
 
 /// Decode langsung dari file.
@@ -196,6 +224,14 @@ mod tests {
         let gray = encode_jpeg(&DynamicImage::ImageLuma8(checker(8, 8).to_luma8()), 80).unwrap();
         assert_eq!(jpeg_components(&gray), Some(1));
         assert_eq!(jpeg_components(b"not a jpeg"), None);
+    }
+
+    #[test]
+    fn orientation_helpers_classify_exif_values() {
+        assert_eq!(orientation_degrees(Orientation::Rotate90), Some(90));
+        assert_eq!(orientation_degrees(Orientation::FlipHorizontal), None);
+        assert!(swaps_axes(Orientation::Rotate270));
+        assert!(!swaps_axes(Orientation::Rotate180));
     }
 
     #[test]

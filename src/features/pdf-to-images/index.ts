@@ -7,6 +7,7 @@ export const pdfToImagesTool: ToolDefinition = {
   id: "pdfToImages",
   route: "/pdf-to-images",
   icon: FileImage,
+  accepts: ["pdf"],
   accent: "sky",
   Page: PdfToImagesPage,
   i18n,

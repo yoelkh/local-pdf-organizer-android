@@ -30,3 +30,10 @@ export function parentDir(path: string): string {
   const idx = Math.max(path.lastIndexOf("\\"), path.lastIndexOf("/"));
   return idx > 0 ? path.slice(0, idx) : path;
 }
+
+/** Gabungkan folder dan nama file dengan pemisah yang dipakai `dir` (Windows atau POSIX). */
+export function joinPath(dir: string, name: string): string {
+  const sep = dir.includes("\\") || /^[A-Za-z]:$/.test(dir) ? "\\" : "/";
+  const trimmed = dir.replace(/[\\/]+$/, "");
+  return `${trimmed}${sep}${name}`;
+}

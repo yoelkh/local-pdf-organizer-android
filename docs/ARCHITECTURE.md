@@ -7,7 +7,7 @@ Semua pemrosesan berjalan lokal; tidak ada koneksi jaringan saat runtime.
 ┌──────────────────────── WebView2 (frontend) ────────────────────────┐
 │  src/app        kerangka: router, header, toggle bahasa             │
 │  src/features   satu folder per alat  ──►  registry.ts              │
-│  src/shared     ipc, intake file, i18n, komponen UI, util           │
+│  src/shared     ipc, intake file, papan halaman, i18n, UI, util     │
 └───────────────────────────────┬──────────────────────────────────────┘
                                 │ invoke(command) / event "progress"
 ┌───────────────────────────────▼──────────────────────────────────────┐
@@ -22,7 +22,7 @@ Semua pemrosesan berjalan lokal; tidak ada koneksi jaringan saat runtime.
 | Lapisan | Boleh bergantung pada | Tidak boleh |
 |---|---|---|
 | `src/app` | `shared`, `features/registry` | isi folder fitur secara langsung |
-| `src/features/<x>` | `shared`, `features/types` | fitur lain |
+| `src/features/<x>` | `shared`, `features/{types,registry,handoff}` | fitur lain |
 | `src/shared` | — | `features/*`, `app/*` |
 | `src-tauri/src/features/<x>` | `core` | fitur lain |
 | `src-tauri/src/core` | crate eksternal | `features::*` |
@@ -30,6 +30,21 @@ Semua pemrosesan berjalan lokal; tidak ada koneksi jaringan saat runtime.
 Aturan "fitur tidak saling mengimpor" diperiksa oleh `npm run lint:deps`
 (`scripts/check-feature-deps.mjs`). Bila dua fitur butuh kode yang sama,
 pindahkan ke `core` (Rust) atau `shared` (TS).
+
+## Papan halaman bersama (`src/shared/pageboard`)
+
+`usePageBoard(files, { onFileEmptied })` mengubah daftar file menjadi ubin halaman
+(untuk gambar: satu ubin per file) dengan urutan, rotasi, dan seleksi. Komponen
+pendampingnya di `src/shared/ui`: `PageTile` (ubin), `BoardViewer` (penampil
+layar penuh dengan putar/hapus/pindah), `BoardActions` (aksi seleksi). Dipakai
+oleh Atur Halaman dan Gambar→PDF; alat baru yang butuh penyusunan per halaman
+cukup memakai ketiganya.
+
+## Handoff antar alat
+
+`src/shared/files/handoff.ts` menitipkan path; `useFileIntake` mengambil titipan
+saat alat dibuka. `src/features/handoff.ts` (boleh diimpor fitur, seperti
+`registry`) membangun aksi "Lanjutkan ke …" dari `ToolDefinition.accepts`.
 
 ## Registrasi terpusat
 

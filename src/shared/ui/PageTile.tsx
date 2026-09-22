@@ -1,13 +1,18 @@
 import { Check, Eye, RotateCw, Trash2 } from "lucide-react";
 import { useT } from "@/shared/i18n/useT";
-import { sourceTagClass } from "@/shared/lib/colors";
-import { PageThumb } from "@/shared/ui/PageThumb";
-import type { BoardPage } from "../hooks/usePageBoard";
+import { accentClasses, sourceTagClass, type Accent } from "@/shared/lib/colors";
+import type { BoardPage } from "@/shared/pageboard/usePageBoard";
+import { PageThumb } from "./PageThumb";
 
 interface Props {
   page: BoardPage;
   position: number;
-  sourceIndex: number;
+  /** Indeks warna file sumber (strip di atas ubin). Abaikan bila `showSourceTag` false. */
+  sourceIndex?: number;
+  showSourceTag?: boolean;
+  /** Keterangan di kaki ubin, mis. "Hal. 3" atau nama file. */
+  caption: string;
+  accent: Accent;
   selected: boolean;
   isDragging: boolean;
   /** Lebar render thumbnail di backend (piksel). */
@@ -19,13 +24,16 @@ interface Props {
 }
 
 /**
- * Satu ubin halaman: thumbnail (dengan rotasi visual), nomor urut, tag sumber.
- * Klik = pilih, klik ganda / tombol mata = lihat ukuran besar.
+ * Satu ubin di papan halaman: thumbnail (dengan rotasi visual), nomor urut,
+ * tag sumber opsional. Klik = pilih, klik ganda / tombol mata = lihat ukuran besar.
  */
 export function PageTile({
   page,
   position,
-  sourceIndex,
+  sourceIndex = 0,
+  showSourceTag = true,
+  caption,
+  accent,
   selected,
   isDragging,
   thumbWidth,
@@ -35,6 +43,7 @@ export function PageTile({
   onRemove,
 }: Props) {
   const { t } = useT();
+  const a = accentClasses(accent);
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
   const sideways = page.rotation % 180 !== 0;
 
@@ -47,11 +56,13 @@ export function PageTile({
       onDoubleClick={() => onView(page.key)}
       className={[
         "group relative flex cursor-grab flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition active:cursor-grabbing",
-        selected ? "border-violet-500 ring-2 ring-violet-300" : "border-slate-200 hover:border-slate-300",
+        selected ? `${a.borderStrong} ring-2 ${a.ring}` : "border-slate-200 hover:border-slate-300",
         isDragging ? "shadow-xl" : "",
       ].join(" ")}
     >
-      <span className={`absolute left-0 top-0 z-10 h-1.5 w-full ${sourceTagClass(sourceIndex)}`} />
+      {showSourceTag && (
+        <span className={`absolute left-0 top-0 z-10 h-1.5 w-full ${sourceTagClass(sourceIndex)}`} />
+      )}
 
       <span className="absolute left-2 top-3 z-10 grid h-6 min-w-6 place-items-center rounded-full bg-slate-900/80 px-1.5 text-xs font-semibold text-white">
         {position + 1}
@@ -60,7 +71,7 @@ export function PageTile({
       <span
         className={[
           "absolute right-2 top-3 z-10 grid h-6 w-6 place-items-center rounded-full border text-white transition",
-          selected ? "border-violet-500 bg-violet-500" : "border-slate-300 bg-white/90 opacity-0 group-hover:opacity-100",
+          selected ? `${a.borderStrong} ${a.bg}` : "border-slate-300 bg-white/90 opacity-0 group-hover:opacity-100",
         ].join(" ")}
       >
         {selected && <Check size={14} />}
@@ -76,11 +87,10 @@ export function PageTile({
             page={page.page}
             width={thumbWidth}
             className="max-h-full max-w-full shadow"
-            alt={t("common.page", { n: page.page + 1 })}
+            alt={caption}
           />
         </div>
 
-        {/* Tombol lihat besar di tengah saat hover */}
         <button
           type="button"
           onPointerDown={stop}
@@ -97,7 +107,9 @@ export function PageTile({
       </div>
 
       <div className="flex items-center justify-between gap-1 border-t border-slate-100 px-2 py-1">
-        <span className="truncate text-xs text-slate-500">{t("common.page", { n: page.page + 1 })}</span>
+        <span className="truncate text-xs text-slate-500" title={caption}>
+          {caption}
+        </span>
         <div className="flex shrink-0">
           <button
             type="button"

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { accentClasses, type Accent } from "@/shared/lib/colors";
 
 export interface Option<V extends string> {
   value: V;
@@ -15,6 +16,7 @@ interface Props<V extends string> {
   /** Tata letak: baris pil ("row") atau kartu bertumpuk ("stack"). */
   layout?: "row" | "stack";
   disabled?: boolean;
+  accent?: Accent;
 }
 
 /** Sekumpulan pilihan eksklusif bergaya kartu/pil. */
@@ -25,7 +27,9 @@ export function OptionGroup<V extends string>({
   options,
   layout = "row",
   disabled = false,
+  accent = "rose",
 }: Props<V>) {
+  const a = accentClasses(accent);
   return (
     <fieldset disabled={disabled} className="disabled:opacity-60">
       <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</legend>
@@ -42,7 +46,7 @@ export function OptionGroup<V extends string>({
                 "rounded-lg border text-left transition",
                 layout === "row" ? "px-3 py-1.5 text-sm" : "px-4 py-3",
                 active
-                  ? "border-rose-400 bg-rose-50 text-rose-700 ring-1 ring-rose-300"
+                  ? `${a.borderActive} ${a.softBg} ${a.textStrong} ring-1 ${a.ring}`
                   : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
               ].join(" ")}
             >

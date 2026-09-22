@@ -1,4 +1,4 @@
-import { Eye, X } from "lucide-react";
+import { Eye, RotateCw, X } from "lucide-react";
 import type { FileInfo } from "@/shared/ipc/types";
 import { useT } from "@/shared/i18n/useT";
 import { formatBytes } from "@/shared/lib/format";
@@ -10,15 +10,19 @@ interface Props {
   onRemove?: (id: string) => void;
   /** Buka penampil halaman besar (tombol mata + klik ganda). */
   onView?: (id: string) => void;
+  /** Putar seluruh file (tampilan visual mengikuti `rotation`). */
+  onRotate?: (id: string) => void;
+  rotation?: number;
   isDragging?: boolean;
   /** Lebar render thumbnail di backend (piksel). */
   thumbWidth?: number;
 }
 
 /** Kartu satu file: thumbnail halaman pertama, nama, jumlah halaman, ukuran. */
-export function FileCard({ file, index, onRemove, onView, isDragging = false, thumbWidth = 260 }: Props) {
+export function FileCard({ file, index, onRemove, onView, onRotate, rotation = 0, isDragging = false, thumbWidth = 260 }: Props) {
   const { t } = useT();
   const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+  const sideways = rotation % 180 !== 0;
 
   return (
     <div
@@ -50,6 +54,21 @@ export function FileCard({ file, index, onRemove, onView, isDragging = false, th
             <Eye size={14} />
           </button>
         )}
+        {onRotate && (
+          <button
+            type="button"
+            onPointerDown={stop}
+            onClick={(e) => {
+              stop(e);
+              onRotate(file.id);
+            }}
+            className="grid h-7 w-7 place-items-center rounded-full bg-white/95 text-slate-600 shadow hover:bg-slate-900 hover:text-white"
+            aria-label={t("common.rotate")}
+            title={t("common.rotate")}
+          >
+            <RotateCw size={14} />
+          </button>
+        )}
         {onRemove && (
           <button
             type="button"
@@ -68,7 +87,10 @@ export function FileCard({ file, index, onRemove, onView, isDragging = false, th
       </div>
 
       <div className="relative aspect-[3/4] bg-slate-50">
-        <div className="absolute inset-0 flex items-center justify-center p-3">
+        <div
+          className="absolute inset-0 flex items-center justify-center p-3 transition-transform duration-200"
+          style={{ transform: `rotate(${rotation}deg) scale(${sideways ? 0.75 : 1})` }}
+        >
           <PageThumb
             fileId={file.id}
             page={0}

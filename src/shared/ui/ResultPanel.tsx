@@ -1,13 +1,25 @@
 import type { ReactNode } from "react";
-import { CheckCircle2, ExternalLink, FolderOpen, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, ExternalLink, FolderOpen, RotateCcw, type LucideIcon } from "lucide-react";
+import { accentClasses, type Accent } from "@/shared/lib/colors";
 import { openOutput, revealOutput } from "@/shared/files/ipc";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
 import { useToast } from "@/shared/ui/Toast";
 import { Button } from "./Button";
 
+/** Tombol "Lanjutkan ke …" menuju alat lain. */
+export interface ResultAction {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  accent: Accent;
+  onClick: () => void;
+}
+
 interface Props {
   title?: string;
+  /** Aksi lanjutan (handoff ke alat lain). */
+  nextActions?: ResultAction[];
   /** Path file hasil (tombol "Buka file" + "Buka folder"). */
   filePath?: string;
   /** Path folder hasil (bila tidak ada satu file utama). */
@@ -17,7 +29,7 @@ interface Props {
 }
 
 /** Panel hasil yang seragam untuk semua alat. */
-export function ResultPanel({ title, filePath, folderPath, onStartOver, children }: Props) {
+export function ResultPanel({ title, filePath, folderPath, onStartOver, nextActions, children }: Props) {
   const { t } = useT();
   const toast = useToast();
 
@@ -66,6 +78,30 @@ export function ResultPanel({ title, filePath, folderPath, onStartOver, children
           {t("common.startOver")}
         </Button>
       </div>
+
+      {nextActions && nextActions.length > 0 && (
+        <div className="mt-8 border-t border-slate-100 pt-6">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{t("handoff.title")}</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {nextActions.map((action) => {
+              const a = accentClasses(action.accent);
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.id}
+                  type="button"
+                  onClick={action.onClick}
+                  className={`inline-flex items-center gap-2 rounded-lg border ${a.border} ${a.softBg} px-3 py-2 text-sm font-medium ${a.textStrong} transition hover:brightness-95`}
+                >
+                  <Icon size={16} />
+                  {action.label}
+                  <ArrowRight size={14} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

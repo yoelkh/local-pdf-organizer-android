@@ -12,5 +12,12 @@ export interface ImagesToPdfOptions {
   margin: Margin;
 }
 
-export const imagesToPdf = (images: string[], options: ImagesToPdfOptions, outPath: string) =>
+/** Mencerminkan `features::images_to_pdf::types::ImageSpec`. */
+export interface ImageSpec {
+  file: string;
+  /** 0 / 90 / 180 / 270, searah jarum jam. */
+  rotation: number;
+}
+
+export const imagesToPdf = (images: ImageSpec[], options: ImagesToPdfOptions, outPath: string) =>
   ipc<OutputInfo>("images_to_pdf", { images, options, outPath });

@@ -43,7 +43,7 @@ split::commands::split_pdf,          // 1 baris di dalam generate_handler!
 
 ```
 split/
-├─ index.ts        export const splitTool: ToolDefinition = { id: "split", route: "/split", icon, accent, Page, i18n }
+├─ index.ts        export const splitTool: ToolDefinition = { id: "split", route: "/split", icon, accent, accepts: ["pdf"], Page, i18n }
 ├─ i18n.ts         { id: {...}, en: {...} } — wajib: split.title, split.description, split.cta
 ├─ ipc.ts          fungsi bertipe per command: export const splitPdf = (...) => ipc<...>("split_pdf", {...})
 ├─ SplitPage.tsx   halaman; pakai useFileIntake, ToolLayout, Dropzone, ResultPanel, dll. dari @/shared
@@ -52,6 +52,9 @@ split/
 ```
 
 Aturan:
+- `accepts` menentukan jenis file yang bisa dititipkan alat lain lewat handoff; di halaman hasil,
+  panggil `useHandoffActions("split", "pdf", paths)` dari `@/features/handoff` dan berikan ke `ResultPanel`.
+- Butuh penyusunan per halaman (urut/putar/pilih)? Pakai `usePageBoard` + `PageTile` + `BoardViewer` + `BoardActions` dari `@/shared`.
 - Semua kunci i18n diprefix `split.` supaya tidak bertabrakan.
 - Hanya impor dari `@/shared/*` dan `@/features/types`. **Jangan** impor fitur lain.
 - Argumen `invoke` memakai camelCase untuk parameter command Rust (`out_dir` → `outDir`).

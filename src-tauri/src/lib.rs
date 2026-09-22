@@ -30,7 +30,8 @@ pub fn run() {
                     tracing::error!("startup failed: {e}");
                     app.dialog()
                         .message(format!(
-                            "Aplikasi tidak bisa dimulai.\n\n{e}\n\nPastikan pdfium.dll berada di folder aplikasi."
+                            "Aplikasi tidak bisa dimulai. Pastikan pdfium.dll berada di folder aplikasi.\n\
+                             The app could not start. Make sure pdfium.dll is in the application folder.\n\n{e}"
                         ))
                         .title("Local PDF Organizer")
                         .kind(MessageDialogKind::Error)

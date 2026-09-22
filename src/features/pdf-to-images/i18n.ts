@@ -19,6 +19,10 @@ export const i18n: Dictionaries = {
     "pdfToImages.resultFiles": "{n} file gambar",
     "pdfToImages.resultZip": "1 file ZIP berisi {n} gambar",
     "pdfToImages.badRange": "Rentang halaman tidak valid. Contoh yang benar: 1-3,5",
+    "pdfToImages.renderingFile": "Merender file {i}/{n}: {name}",
+    "pdfToImages.pagesAppliesAll": "Rentang yang sama dipakai untuk semua file.",
+    "pdfToImages.zipEach": "Bungkus setiap file ke ZIP tersendiri",
+    "pdfToImages.resultZipShort": "{n} gambar → {zip}",
   },
   en: {
     "pdfToImages.title": "PDF to Images",
@@ -38,5 +42,9 @@ export const i18n: Dictionaries = {
     "pdfToImages.resultFiles": "{n} image files",
     "pdfToImages.resultZip": "1 ZIP file containing {n} images",
     "pdfToImages.badRange": "Invalid page range. A valid example: 1-3,5",
+    "pdfToImages.renderingFile": "Rendering file {i}/{n}: {name}",
+    "pdfToImages.pagesAppliesAll": "The same range is applied to every file.",
+    "pdfToImages.zipEach": "Bundle each file into its own ZIP",
+    "pdfToImages.resultZipShort": "{n} images → {zip}",
   },
 };

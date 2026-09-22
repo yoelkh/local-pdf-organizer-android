@@ -174,12 +174,60 @@ pub fn raw_xobject(width: u32, height: u32, gray: bool, samples: Vec<u8>) -> Str
 
 /// Content stream yang menggambar XObject `name` memenuhi kotak (x, y, w, h) dalam poin.
 pub fn draw_image_content(name: &str, x: f32, y: f32, w: f32, h: f32) -> Vec<u8> {
-    format!("q\n{w:.4} 0 0 {h:.4} {x:.4} {y:.4} cm\n/{name} Do\nQ\n").into_bytes()
+    draw_image_content_rotated(name, x, y, w, h, 0)
+}
+
+/// Seperti `draw_image_content`, tetapi gambar diputar `rotation` derajat searah
+/// jarum jam di dalam kotak (x, y, w, h). Kotak adalah extent gambar *setelah*
+/// rotasi, jadi untuk 90/270 pemanggil menukar lebar/tinggi gambar.
+/// Rotasi dilakukan lewat matriks `cm`, sehingga sampel XObject tidak perlu di-encode ulang.
+pub fn draw_image_content_rotated(name: &str, x: f32, y: f32, w: f32, h: f32, rotation: u16) -> Vec<u8> {
+    let m = match rotation % 360 {
+        90 => format!("0.0000 {:.4} {w:.4} 0.0000 {x:.4} {:.4}", -h, y + h),
+        180 => format!("{:.4} 0.0000 0.0000 {:.4} {:.4} {:.4}", -w, -h, x + w, y + h),
+        270 => format!("0.0000 {h:.4} {:.4} 0.0000 {:.4} {y:.4}", -w, x + w),
+        _ => format!("{w:.4} 0.0000 0.0000 {h:.4} {x:.4} {y:.4}"),
+    };
+    format!("q\n{m} cm\n/{name} Do\nQ\n").into_bytes()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Terapkan matriks `a b c d e f` pada titik satuan (u, v).
+    fn apply(m: &[f32; 6], u: f32, v: f32) -> (f32, f32) {
+        (m[0] * u + m[2] * v + m[4], m[1] * u + m[3] * v + m[5])
+    }
+
+    fn matrix_of(content: &[u8]) -> [f32; 6] {
+        let text = String::from_utf8_lossy(content);
+        let line = text.lines().find(|l| l.ends_with(" cm")).unwrap();
+        let nums: Vec<f32> = line.split_whitespace().take(6).map(|n| n.parse().unwrap()).collect();
+        nums.try_into().unwrap()
+    }
+
+    #[test]
+    fn rotation_matrices_map_image_corners_into_the_box() {
+        // Kotak 10..40 x 20..80 (w=30, h=60). Untuk setiap sudut, keempat sudut gambar
+        // harus jatuh tepat di sudut kotak, dan "atas" gambar (v=1) pindah sesuai arah putar.
+        for rot in [0u16, 90, 180, 270] {
+            let m = matrix_of(&draw_image_content_rotated("Im0", 10.0, 20.0, 30.0, 60.0, rot));
+            let corners = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
+            for (u, v) in corners {
+                let (px, py) = apply(&m, u, v);
+                assert!((px - 10.0).abs() < 1e-3 || (px - 40.0).abs() < 1e-3, "rot {rot}: x={px}");
+                assert!((py - 20.0).abs() < 1e-3 || (py - 80.0).abs() < 1e-3, "rot {rot}: y={py}");
+            }
+            let (tx, ty) = apply(&m, 0.5, 1.0); // tengah sisi atas gambar
+            match rot {
+                0 => assert!((ty - 80.0).abs() < 1e-3),   // atas tetap di atas
+                90 => assert!((tx - 40.0).abs() < 1e-3),  // searah jarum jam: atas ke kanan
+                180 => assert!((ty - 20.0).abs() < 1e-3), // atas ke bawah
+                _ => assert!((tx - 10.0).abs() < 1e-3),   // 270: atas ke kiri
+            }
+        }
+    }
 
     #[test]
     fn blank_document_gets_pages_appended() {

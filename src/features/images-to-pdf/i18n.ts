@@ -20,6 +20,10 @@ export const i18n: Dictionaries = {
     "imagesToPdf.margin.none": "Tanpa",
     "imagesToPdf.margin.small": "Kecil",
     "imagesToPdf.margin.big": "Besar",
+    "imagesToPdf.hint": "Seret untuk mengurutkan · klik untuk memilih · putar per gambar · klik ganda untuk melihat ukuran besar.",
+    "imagesToPdf.noImages": "Tidak ada gambar untuk dikonversi.",
+    "imagesToPdf.pagesInResult": "{n} halaman di hasil",
+    "imagesToPdf.orientationFitNote": "Orientasi mengikuti gambar saat ukuran halaman \"Sesuai gambar\". Pilih A4/Letter untuk mengaturnya.",
   },
   en: {
     "imagesToPdf.title": "Images to PDF",
@@ -40,5 +44,9 @@ export const i18n: Dictionaries = {
     "imagesToPdf.margin.none": "None",
     "imagesToPdf.margin.small": "Small",
     "imagesToPdf.margin.big": "Big",
+    "imagesToPdf.hint": "Drag to reorder · click to select · rotate each image · double-click to view full size.",
+    "imagesToPdf.noImages": "There are no images to convert.",
+    "imagesToPdf.pagesInResult": "{n} pages in result",
+    "imagesToPdf.orientationFitNote": "Orientation follows each image while page size is \"Fit to image\". Choose A4/Letter to control it.",
   },
 };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { FileInfo } from "@/shared/ipc/types";
 
@@ -36,21 +36,32 @@ function pagesOf(file: FileInfo): BoardPage[] {
   }));
 }
 
+export interface PageBoardOptions {
+  /** Dipanggil saat semua ubin sebuah file dihapus dari papan (mis. untuk melepas filenya). */
+  onFileEmptied?: (fileId: string) => void;
+}
+
 /**
  * State papan halaman. Menyinkronkan diri dengan daftar `files`:
- * file baru → halamannya ditambahkan di akhir; file hilang → ubinnya dibuang.
+ * file yang baru pertama kali muncul → halamannya ditambahkan di akhir;
+ * file hilang → ubinnya dibuang. Ubin yang sudah dihapus pengguna tidak
+ * dimunculkan lagi selama filenya masih ada (kecuali lewat `reset`).
  */
-export function usePageBoard(files: FileInfo[]): PageBoard {
+export function usePageBoard(files: FileInfo[], options: PageBoardOptions = {}): PageBoard {
   const [pages, setPages] = useState<BoardPage[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [order, setOrder] = useState<string[]>([]);
+  const seen = useRef<Set<string>>(new Set());
+  const onFileEmptied = useRef(options.onFileEmptied);
+  onFileEmptied.current = options.onFileEmptied;
 
   useEffect(() => {
     const ids = new Set(files.map((f) => f.id));
+    const fresh = files.filter((f) => !seen.current.has(f.id));
+    seen.current = new Set(ids);
     setPages((prev) => {
       const kept = prev.filter((p) => ids.has(p.fileId));
-      const known = new Set(kept.map((p) => p.fileId));
-      const added = files.filter((f) => !known.has(f.id)).flatMap(pagesOf);
+      const added = fresh.flatMap(pagesOf);
       return added.length === 0 && kept.length === prev.length ? prev : [...kept, ...added];
     });
     setOrder((prev) => {
@@ -76,15 +87,28 @@ export function usePageBoard(files: FileInfo[]): PageBoard {
     );
   }, []);
 
+  /** Buang ubin dengan kunci di `keys`; laporkan file yang kehilangan semua ubinnya. */
+  const dropKeys = useCallback(
+    (keys: Set<string>) => {
+      const next = pages.filter((p) => !keys.has(p.key));
+      const remaining = new Set(next.map((p) => p.fileId));
+      const emptied = new Set(pages.filter((p) => keys.has(p.key) && !remaining.has(p.fileId)).map((p) => p.fileId));
+      setPages(next);
+      const cb = onFileEmptied.current;
+      if (cb) emptied.forEach((id) => cb(id));
+    },
+    [pages],
+  );
+
   const remove = useCallback((key: string) => {
-    setPages((prev) => prev.filter((p) => p.key !== key));
+    dropKeys(new Set([key]));
     setSelected((prev) => {
       if (!prev.has(key)) return prev;
       const next = new Set(prev);
       next.delete(key);
       return next;
     });
-  }, []);
+  }, [dropKeys]);
 
   const toggleSelect = useCallback((key: string) => {
     setSelected((prev) => {
@@ -102,9 +126,9 @@ export function usePageBoard(files: FileInfo[]): PageBoard {
   const clearSelection = useCallback(() => setSelected(new Set()), []);
 
   const removeSelected = useCallback(() => {
-    setPages((prev) => prev.filter((p) => !selected.has(p.key)));
+    dropKeys(selected);
     setSelected(new Set());
-  }, [selected]);
+  }, [selected, dropKeys]);
 
   const rotateSelected = useCallback(() => {
     setPages((prev) =>
@@ -113,6 +137,7 @@ export function usePageBoard(files: FileInfo[]): PageBoard {
   }, [selected]);
 
   const reset = useCallback(() => {
+    seen.current = new Set(files.map((f) => f.id));
     setPages(files.flatMap(pagesOf));
     setSelected(new Set());
   }, [files]);

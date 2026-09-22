@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
+import type { Accept } from "@/shared/files/accept";
 import type { Dictionaries } from "@/shared/i18n/LanguageProvider";
 import type { Accent } from "@/shared/lib/colors";
 
@@ -16,6 +17,8 @@ export interface ToolDefinition {
   route: string;
   icon: LucideIcon;
   accent: Accent;
+  /** Jenis file yang diterima alat ini (dipakai untuk handoff antar alat). */
+  accepts: Accept[];
   Page: ComponentType;
   i18n: Dictionaries;
 }

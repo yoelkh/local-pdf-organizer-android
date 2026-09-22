@@ -43,7 +43,7 @@ pub async fn inspect(path: &Path, pdf: &PdfWorkerHandle) -> AppResult<FileEntry>
             (info.pages, info.width, info.height)
         }
         FileKind::Image => {
-            let (w, h) = images::dimensions(path)?;
+            let (w, h) = images::dimensions_oriented(path)?;
             (1, w as f32, h as f32)
         }
     };

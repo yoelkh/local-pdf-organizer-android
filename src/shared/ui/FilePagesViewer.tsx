@@ -9,6 +9,12 @@ interface Props {
   /** File yang dibuka; `null` = penampil tertutup. */
   openFileId: string | null;
   onClose: () => void;
+  /** Rotasi visual per file (id → derajat). */
+  rotations?: Record<string, number>;
+  /** Bila diisi, tombol putar di penampil memutar seluruh file. */
+  onRotateFile?: (fileId: string) => void;
+  /** Bila diisi, tombol hapus di penampil melepas file. */
+  onRemoveFile?: (fileId: string) => void;
 }
 
 /**
@@ -16,7 +22,7 @@ interface Props {
  * menelusuri semua halaman semua file secara berurutan, dimulai dari
  * halaman pertama file yang diklik. Urutan = urutan hasil akhir.
  */
-export function FilePagesViewer({ files, openFileId, onClose }: Props) {
+export function FilePagesViewer({ files, openFileId, onClose, rotations, onRotateFile, onRemoveFile }: Props) {
   const { t } = useT();
   const [state, setState] = useState<{ openedFor: string | null; index: number }>({
     openedFor: null,
@@ -30,11 +36,12 @@ export function FilePagesViewer({ files, openFileId, onClose }: Props) {
           key: `${file.id}:${page}`,
           fileId: file.id,
           page,
+          rotation: rotations?.[file.id] ?? 0,
           title: file.name,
           subtitle: file.kind === "pdf" ? t("viewer.pageOf", { n: page + 1, total: file.pages }) : undefined,
         })),
       ),
-    [files, t],
+    [files, rotations, t],
   );
 
   // Saat file yang dibuka berganti, mulai dari halaman pertamanya
@@ -53,6 +60,8 @@ export function FilePagesViewer({ files, openFileId, onClose }: Props) {
       index={Math.min(index, items.length - 1)}
       onIndexChange={(next) => setState({ openedFor: openFileId, index: next })}
       onClose={onClose}
+      onRotate={onRotateFile ? (item) => onRotateFile(item.fileId) : undefined}
+      onRemove={onRemoveFile ? (item) => onRemoveFile(item.fileId) : undefined}
     />
   );
 }

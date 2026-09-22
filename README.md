@@ -27,16 +27,17 @@ No uploads, no size limits, and no file ever leaves your computer.
 
 | | Tool | What it does |
 |:-:|---|---|
-| 🧩 | **Merge PDF** | Combine several PDFs; set the order with drag and drop. |
+| 🧩 | **Merge PDF** | Combine several PDFs; set the order with drag and drop, rotate whole files, or jump to per-page organizing. |
 | 🗂️ | **Organize Pages** | Reorder, rotate, delete, or insert pages from other PDFs. Select many pages at once. |
-| 🖼️ | **Images → PDF** | Turn JPG, PNG, WebP, BMP, GIF, and TIFF into a PDF. Choose page size, orientation, and margins. |
-| 📷 | **PDF → Images** | Render pages to PNG/JPG at 72/150/300 dpi, pick a page range, optionally bundle as ZIP. |
+| 🖼️ | **Images → PDF** | Turn JPG, PNG, WebP, BMP, GIF, and TIFF into a PDF. Reorder and rotate each image, pick page size, orientation, and margins. EXIF orientation is honored without re-encoding JPEGs. |
+| 📷 | **PDF → Images** | Render one or many PDFs to PNG/JPG at 72/150/300 dpi, pick a page range, optionally bundle each as ZIP. |
 | 🗜️ | **Compress PDF** | Three levels (low / recommended / extreme) with a before → after size report. |
 
 Also included:
 
 - 🔍 **Full-size page viewer** in every tool: double-click a page or hit the eye icon, then browse with the arrow keys, zoom, rotate, delete, or move a page without leaving the viewer.
 - 🔠 **Adjustable thumbnail size**: a slider above every grid, from compact overview to large previews. Your choice is remembered per tool.
+- 🔗 **Continue with the result**: every result screen offers one-click handoff to the other tools (e.g. merge → compress → convert) with the output preloaded.
 - 🌐 **English** and **Bahasa Indonesia** UI (toggle in the header), plus drag-and-drop straight from File Explorer.
 
 ---
@@ -64,6 +65,8 @@ Requires Windows 10/11 with WebView2 (preinstalled on Windows 11).
 > 💡 In **Organize Pages**, click a page to select it, then rotate or delete many pages at once. **Add files** inserts pages from another PDF.
 >
 > 🔍 Can't tell pages apart? Drag the **thumbnail size** slider, or **double-click** any page to open it full size. Viewer keys: `←` `→` change page · `+` `-` zoom · `0` fit · `R` rotate · `Del` delete · `Esc` close.
+>
+> 🔄 **Updating?** The app does not update itself yet. Download the newest installer from Releases and run it over the installed version; no uninstall needed.
 
 ---
 
@@ -99,7 +102,7 @@ The output lands in `src-tauri/target/release/bundle/nsis/`.
 ### Test
 
 ```bash
-cd src-tauri && cargo test        # 28 tests: services, layout, compression, PDFium pipeline
+cd src-tauri && cargo test        # 33 tests: services, layout, rotation matrices, EXIF, compression, PDFium pipeline
 npm run build                     # type-check + frontend build
 npm run lint:deps                 # cross-feature import rule
 ```
@@ -114,7 +117,7 @@ Sample files for manual testing: `cd src-tauri && cargo run --example make_sampl
 ┌──────────────── Frontend (React + TS + Tailwind) ────────────────┐
 │  src/app        router, header, language toggle                   │
 │  src/features   one folder per tool  ──►  registry.ts             │
-│  src/shared     ipc, file intake, i18n, UI components             │
+│  src/shared     ipc, file intake, page board, i18n, UI components │
 └──────────────────────────────┬────────────────────────────────────┘
                                │  invoke(command) · "progress" event
 ┌──────────────────────────────▼────────────────────────────────────┐

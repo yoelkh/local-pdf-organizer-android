@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
@@ -49,4 +50,13 @@ pub struct ImagesToPdfOptions {
     pub orientation: Orientation,
     #[serde(default)]
     pub margin: Margin,
+}
+
+/// Satu gambar di dokumen hasil, sesuai susunan pengguna di UI.
+#[derive(Debug, Clone, Deserialize)]
+pub struct ImageSpec {
+    pub file: Uuid,
+    /// Rotasi searah jarum jam (0/90/180/270).
+    #[serde(default)]
+    pub rotation: u16,
 }

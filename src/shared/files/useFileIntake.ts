@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import type { FileInfo } from "@/shared/ipc/types";
 import { useToast } from "@/shared/ui/Toast";
@@ -7,6 +7,7 @@ import { describeError } from "@/shared/i18n/errors";
 import { matchesAccept, type Accept } from "./accept";
 import { pickFiles } from "./dialogs";
 import { useFileDrop } from "./dragDrop";
+import { takeHandoff } from "./handoff";
 import { inspectFiles, removeFile } from "./ipc";
 import { forgetThumbnails } from "./thumbnails";
 
@@ -29,13 +30,15 @@ interface Options {
   accept: Accept[];
   /** Hanya satu file sekaligus; file baru menggantikan yang lama. */
   single?: boolean;
+  /** Muat file titipan dari alat lain saat pertama dibuka (default: ya). */
+  consumeHandoff?: boolean;
 }
 
 /**
  * Sumber file untuk sebuah alat: dialog native + drop dari Explorer,
  * lalu didaftarkan ke backend. Semua halaman fitur memakai hook ini.
  */
-export function useFileIntake({ accept, single = false }: Options): FileIntake {
+export function useFileIntake({ accept, single = false, consumeHandoff = true }: Options): FileIntake {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
@@ -99,6 +102,15 @@ export function useFileIntake({ accept, single = false }: Options): FileIntake {
   }, []);
 
   const { isDragging } = useFileDrop(addPaths);
+
+  // File yang dititipkan alat lain (handoff) dimuat sekali saat mount.
+  const latestAddPaths = useRef(addPaths);
+  latestAddPaths.current = addPaths;
+  useEffect(() => {
+    if (!consumeHandoff) return;
+    const paths = takeHandoff();
+    if (paths.length > 0) void latestAddPaths.current(paths);
+  }, [consumeHandoff]);
 
   return { files, busy, isDragging, addPaths, pick, remove, clear, reorder, setFiles };
 }

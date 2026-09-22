@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { CheckSquare, LayoutGrid, MoveLeft, MoveRight, RotateCw, Square, Trash2, Undo2, X } from "lucide-react";
+import { useCallback, useState } from "react";
+import { LayoutGrid, X } from "lucide-react";
+import { useHandoffActions } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
 import { pickSavePath } from "@/shared/files/dialogs";
 import { useT } from "@/shared/i18n/useT";
@@ -7,18 +8,19 @@ import { describeError } from "@/shared/i18n/errors";
 import type { OutputInfo } from "@/shared/ipc/types";
 import { formatBytes, stripExtension } from "@/shared/lib/format";
 import { sourceTagClass } from "@/shared/lib/colors";
+import { usePageBoard, type BoardPage } from "@/shared/pageboard/usePageBoard";
+import { BoardActions } from "@/shared/ui/BoardActions";
+import { BoardViewer } from "@/shared/ui/BoardViewer";
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { GridToolbar } from "@/shared/ui/GridToolbar";
-import { PageViewer, type ViewerItem } from "@/shared/ui/PageViewer";
+import { PageTile } from "@/shared/ui/PageTile";
 import { ProgressOverlay } from "@/shared/ui/ProgressOverlay";
 import { ResultPanel } from "@/shared/ui/ResultPanel";
 import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
-import { PageTile } from "./components/PageTile";
-import { usePageBoard } from "./hooks/usePageBoard";
 import { organizePdf } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -33,36 +35,14 @@ export function OrganizePage() {
   const [result, setResult] = useState<OutputInfo | null>(null);
   const [viewKey, setViewKey] = useState<string | null>(null);
   const thumbSize = useThumbSize("organize", 210);
+  const nextActions = useHandoffActions("organize", "pdf", result ? [result.path] : []);
 
   const hasFiles = intake.files.length > 0;
-  const selectedCount = board.selected.size;
-
-  // Penampil halaman besar mengikuti urutan papan saat ini.
-  const viewerItems = useMemo<ViewerItem[]>(() => {
-    const names = new Map(intake.files.map((f) => [f.id, f.name]));
-    return board.pages.map((p) => ({
-      key: p.key,
-      fileId: p.fileId,
-      page: p.page,
-      rotation: p.rotation,
-      title: names.get(p.fileId) ?? "",
-      subtitle: t("common.page", { n: p.page + 1 }),
-    }));
-  }, [board.pages, intake.files, t]);
-  const viewIndex = viewKey ? board.pages.findIndex((p) => p.key === viewKey) : -1;
-
-  function removeFromViewer(key: string) {
-    const i = board.pages.findIndex((p) => p.key === key);
-    const neighbor = board.pages[i + 1] ?? board.pages[i - 1];
-    board.remove(key);
-    setViewKey(neighbor ? neighbor.key : null);
-  }
-
-  function moveInViewer(delta: -1 | 1) {
-    const target = viewIndex + delta;
-    if (viewIndex < 0 || target < 0 || target >= board.pages.length) return;
-    board.reorder(viewIndex, target);
-  }
+  const nameOf = useCallback(
+    (page: BoardPage) => intake.files.find((f) => f.id === page.fileId)?.name ?? "",
+    [intake.files],
+  );
+  const captionOf = useCallback((page: BoardPage) => t("common.page", { n: page.page + 1 }), [t]);
 
   async function run() {
     if (board.pages.length === 0) {
@@ -95,7 +75,7 @@ export function OrganizePage() {
 
   if (result) {
     return (
-      <ResultPanel filePath={result.path} onStartOver={startOver}>
+      <ResultPanel filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
         <p className="text-center text-sm text-slate-600">
           {t("common.pages", { n: result.pages })} · {formatBytes(result.size)}
         </p>
@@ -106,40 +86,7 @@ export function OrganizePage() {
   return (
     <>
       <ProgressOverlay visible={busy} label={t("common.processing")} />
-      {viewIndex >= 0 && (
-        <PageViewer
-          items={viewerItems}
-          index={viewIndex}
-          onIndexChange={(i) => setViewKey(board.pages[i]?.key ?? null)}
-          onClose={() => setViewKey(null)}
-          onRotate={(item) => board.rotate(item.key)}
-          onRemove={(item) => removeFromViewer(item.key)}
-          extraActions={
-            <>
-              <button
-                type="button"
-                onClick={() => moveInViewer(-1)}
-                disabled={viewIndex <= 0}
-                title={t("organize.moveEarlier")}
-                aria-label={t("organize.moveEarlier")}
-                className="grid h-9 w-9 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <MoveLeft size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={() => moveInViewer(1)}
-                disabled={viewIndex >= board.pages.length - 1}
-                title={t("organize.moveLater")}
-                aria-label={t("organize.moveLater")}
-                className="grid h-9 w-9 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <MoveRight size={18} />
-              </button>
-            </>
-          }
-        />
-      )}
+      <BoardViewer board={board} viewKey={viewKey} onViewKeyChange={setViewKey} titleFor={nameOf} captionFor={captionOf} />
       <ToolLayout
         title={t("organize.title")}
         description={t("organize.description")}
@@ -149,9 +96,7 @@ export function OrganizePage() {
           hasFiles && (
             <>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t("organize.sources")}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("organize.sources")}</p>
                 <ul className="mt-2 flex flex-col gap-1.5">
                   {intake.files.map((f) => (
                     <li key={f.id} className="flex items-center gap-2 text-sm">
@@ -178,28 +123,8 @@ export function OrganizePage() {
                 <p className="text-sm text-slate-700">{t("organize.pagesInResult", { n: board.pages.length })}</p>
               </div>
 
-              <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
-                {selectedCount === 0 ? (
-                  <Button variant="secondary" size="sm" icon={<CheckSquare size={14} />} onClick={board.selectAll}>
-                    {t("common.selectAll")}
-                  </Button>
-                ) : (
-                  <>
-                    <p className="text-xs font-medium text-violet-700">{t("organize.selected", { n: selectedCount })}</p>
-                    <Button variant="secondary" size="sm" icon={<RotateCw size={14} />} onClick={board.rotateSelected}>
-                      {t("organize.rotateSelected")}
-                    </Button>
-                    <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={board.removeSelected}>
-                      {t("common.deleteSelected", { n: selectedCount })}
-                    </Button>
-                    <Button variant="ghost" size="sm" icon={<Square size={14} />} onClick={board.clearSelection}>
-                      {t("common.deselect")}
-                    </Button>
-                  </>
-                )}
-                <Button variant="ghost" size="sm" icon={<Undo2 size={14} />} onClick={board.reset}>
-                  {t("common.reset")}
-                </Button>
+              <div className="border-t border-slate-100 pt-4">
+                <BoardActions board={board} accent="violet" />
               </div>
 
               <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy || board.pages.length === 0} icon={<LayoutGrid size={18} />}>
@@ -223,14 +148,16 @@ export function OrganizePage() {
               style={thumbSize.gridStyle}
               renderItem={(page, index, { isDragging }) => (
                 <PageTile
-                  thumbWidth={thumbSize.renderWidth}
-                  onView={setViewKey}
                   page={page}
                   position={index}
                   sourceIndex={board.sourceIndex.get(page.fileId) ?? 0}
+                  caption={captionOf(page)}
+                  accent="violet"
                   selected={board.selected.has(page.key)}
                   isDragging={isDragging}
+                  thumbWidth={thumbSize.renderWidth}
                   onToggle={board.toggleSelect}
+                  onView={setViewKey}
                   onRotate={board.rotate}
                   onRemove={board.remove}
                 />

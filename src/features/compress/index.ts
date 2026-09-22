@@ -7,6 +7,7 @@ export const compressTool: ToolDefinition = {
   id: "compress",
   route: "/compress",
   icon: Minimize2,
+  accepts: ["pdf"],
   accent: "emerald",
   Page: CompressPage,
   i18n,

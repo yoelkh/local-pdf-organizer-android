@@ -7,6 +7,7 @@ export const organizeTool: ToolDefinition = {
   id: "organize",
   route: "/organize",
   icon: LayoutGrid,
+  accepts: ["pdf"],
   accent: "violet",
   Page: OrganizePage,
   i18n,

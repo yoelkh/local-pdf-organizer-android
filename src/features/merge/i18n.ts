@@ -10,6 +10,9 @@ export const i18n: Dictionaries = {
     "merge.needTwo": "Tambahkan minimal 2 file PDF untuk digabungkan.",
     "merge.defaultName": "gabungan",
     "merge.done": "PDF berhasil digabungkan ({pages} halaman).",
+    "merge.hint": "Seret kartu untuk mengurutkan · putar seluruh file dengan ikon putar · klik ganda untuk melihat isinya.",
+    "merge.perPageHint": "Perlu mengatur, memutar, atau membuang halaman tertentu?",
+    "merge.openInOrganize": "Atur per halaman",
   },
   en: {
     "merge.title": "Merge PDF",
@@ -20,5 +23,8 @@ export const i18n: Dictionaries = {
     "merge.needTwo": "Add at least 2 PDF files to merge.",
     "merge.defaultName": "merged",
     "merge.done": "PDF merged successfully ({pages} pages).",
+    "merge.hint": "Drag cards to reorder · rotate a whole file with the rotate icon · double-click to look inside.",
+    "merge.perPageHint": "Need to reorder, rotate, or drop specific pages?",
+    "merge.openInOrganize": "Organize per page",
   },
 };

@@ -7,6 +7,7 @@ export const mergeTool: ToolDefinition = {
   id: "merge",
   route: "/merge",
   icon: Layers,
+  accepts: ["pdf"],
   accent: "rose",
   Page: MergePage,
   i18n,

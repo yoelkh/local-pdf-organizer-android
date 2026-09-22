@@ -32,7 +32,7 @@ function featureOf(file, featuresDir) {
     const text = readFileSync(file, "utf8");
     for (const m of text.matchAll(/from\s+["']@\/features\/([^"'/]+)/g)) {
       const target = m[1];
-      if (target !== feature && target !== "types" && target !== "registry") {
+      if (target !== feature && !["types", "registry", "handoff"].includes(target)) {
         problems.push(`${relative(root, file)} -> @/features/${target}`);
       }
     }
@@ -42,7 +42,7 @@ function featureOf(file, featuresDir) {
       const target = resolve(dirname(file), m[1]);
       const rel = relative(featuresDir, target).split(sep);
       const escapes = rel[0] === ".." || (rel.length > 1 && rel[0] !== feature);
-      const allowed = rel.length === 1 && ["types", "registry"].includes(rel[0].replace(/\.tsx?$/, ""));
+      const allowed = rel.length === 1 && ["types", "registry", "handoff"].includes(rel[0].replace(/\.tsx?$/, ""));
       if (escapes && !allowed) problems.push(`${relative(root, file)} -> ${m[1]}`);
     }
   }
