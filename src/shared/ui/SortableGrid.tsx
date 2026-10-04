@@ -2,7 +2,8 @@ import type { CSSProperties, ReactNode } from "react";
 import {
   DndContext,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCenter,
   useSensor,
   useSensors,
@@ -33,8 +34,10 @@ interface Props<T> {
 }
 
 /**
- * Grid yang bisa diurutkan dengan drag (pointer + keyboard).
- * Memakai pointer events, jadi tetap berjalan meski drag-drop native Tauri aktif.
+ * Grid yang bisa diurutkan dengan drag (mouse, sentuh dengan long-press, dan keyboard).
+ * - Mouse: mulai drag setelah gerak kecil 6px (perilaku desktop asli).
+ * - Sentuh: scroll vertikal halaman bekerja normal; tekan lama (~250ms) memulai drag.
+ * - Keyboard: navigasi spasi/panah tetap berfungsi.
  */
 export function SortableGrid<T>({
   items,
@@ -46,7 +49,12 @@ export function SortableGrid<T>({
   disabled = false,
 }: Props<T>) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(MouseSensor, {
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 6 },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
   const ids = items.map(getId);
@@ -87,15 +95,33 @@ function SortableItem({
     id,
     disabled,
   });
+
   const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
+    transform: CSS.Transform.toString(
+      transform
+        ? {
+            ...transform,
+            scaleX: isDragging ? 1.04 : 1,
+            scaleY: isDragging ? 1.04 : 1,
+          }
+        : isDragging
+          ? { x: 0, y: 0, scaleX: 1.04, scaleY: 1.04 }
+          : null,
+    ),
     transition,
-    zIndex: isDragging ? 10 : undefined,
-    opacity: isDragging ? 0.85 : 1,
-    touchAction: "none",
+    zIndex: isDragging ? 30 : undefined,
+    opacity: isDragging ? 0.95 : 1,
+    touchAction: "pan-y",
   };
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`transition-shadow duration-200 motion-reduce:transition-none ${isDragging ? "shadow-2xl rounded-xl ring-2 ring-blue-500/40" : ""}`}
+      {...attributes}
+      {...listeners}
+    >
       {children({ isDragging })}
     </div>
   );

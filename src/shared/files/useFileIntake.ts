@@ -4,7 +4,7 @@ import type { FileInfo } from "@/shared/ipc/types";
 import { useToast } from "@/shared/ui/Toast";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
-import { matchesAccept, type Accept } from "./accept";
+import { isContentUri, matchesAccept, type Accept } from "./accept";
 import { pickFiles } from "./dialogs";
 import { useFileDrop } from "./dragDrop";
 import { takeHandoff } from "./handoff";
@@ -54,19 +54,35 @@ export function useFileIntake({ accept, single = false, consumeHandoff = true }:
       setBusy(true);
       try {
         const result = await inspectFiles(single ? wanted.slice(0, 1) : wanted);
-        setFiles((prev) => {
-          if (single) {
-            prev.forEach((f) => void removeFile(f.id).catch(() => undefined));
-            return result.files.slice(0, 1);
-          }
-          const known = new Set(prev.map((f) => f.path));
-          const fresh = result.files.filter((f) => !known.has(f.path));
-          result.files
-            .filter((f) => known.has(f.path))
-            .forEach((f) => void removeFile(f.id).catch(() => undefined));
-          return [...prev, ...fresh];
-        });
-        result.skipped.forEach((s) => toast.error(t("intake.skippedFile", { name: baseName(s.path) })));
+        // Filter berdasarkan jenis file (kind) yang didukung alat.
+        // Pada Android, content:// melewati pra-filter ekstensi, sehingga validasi jenis dilakukan di sini.
+        const validFiles = result.files.filter((f) => accept.includes(f.kind));
+        const wrongKindFiles = result.files.filter((f) => !accept.includes(f.kind));
+
+        if (wrongKindFiles.length > 0) {
+          wrongKindFiles.forEach((f) => void removeFile(f.id).catch(() => undefined));
+          toast.info(t("intake.skippedType", { n: wrongKindFiles.length }));
+        }
+
+        if (validFiles.length > 0) {
+          setFiles((prev) => {
+            if (single) {
+              prev.forEach((f) => void removeFile(f.id).catch(() => undefined));
+              validFiles.slice(1).forEach((f) => void removeFile(f.id).catch(() => undefined));
+              return validFiles.slice(0, 1);
+            }
+            const known = new Set(prev.map((f) => f.path));
+            const fresh = validFiles.filter((f) => !known.has(f.path));
+            validFiles
+              .filter((f) => known.has(f.path))
+              .forEach((f) => void removeFile(f.id).catch(() => undefined));
+            return [...prev, ...fresh];
+          });
+        }
+        result.skipped.forEach((s) =>
+          toast.error(t("intake.skippedFile", { name: isContentUri(s.path) ? t("common.file") : baseName(s.path) })),
+        );
+
       } catch (e) {
         toast.error(describeError(e, t));
       } finally {

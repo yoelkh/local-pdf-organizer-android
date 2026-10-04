@@ -55,6 +55,10 @@ Aturan:
 - `accepts` menentukan jenis file yang bisa dititipkan alat lain lewat handoff; di halaman hasil,
   panggil `useHandoffActions("split", "pdf", paths)` dari `@/features/handoff` dan berikan ke `ResultPanel`.
 - Butuh penyusunan per halaman (urut/putar/pilih)? Pakai `usePageBoard` + `PageTile` + `BoardViewer` + `BoardActions` dari `@/shared`.
+- Agar jalan di Windows dan Android: tulis hasil ke path dari `prepareOutputFile` / `prepareOutputDir`
+  (`@/shared/platform/outputs`), bukan langsung dari dialog; berikan `outputs` (daftar path hasil) ke
+  `ResultPanel`; isi slot `options` / `action` / `secondary` milik `ToolLayout`; sediakan kunci
+  `split.short` (label navigasi bawah) dan teks petunjuk versi sentuh bila ada.
 - Semua kunci i18n diprefix `split.` supaya tidak bertabrakan.
 - Hanya impor dari `@/shared/*` dan `@/features/types`. **Jangan** impor fitur lain.
 - Argumen `invoke` memakai camelCase untuk parameter command Rust (`out_dir` → `outDir`).

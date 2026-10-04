@@ -43,19 +43,19 @@ export function OptionGroup<V extends string>({
               onClick={() => onChange(opt.value)}
               aria-pressed={active}
               className={[
-                "rounded-lg border text-left transition",
+                "rounded-lg border text-left transition min-w-0 max-w-full",
                 layout === "row" ? "px-3 py-1.5 text-sm" : "px-4 py-3",
                 active
                   ? `${a.borderActive} ${a.softBg} ${a.textStrong} ring-1 ${a.ring}`
                   : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
               ].join(" ")}
             >
-              <span className="flex items-center gap-2 font-medium">
+              <span className="flex items-center gap-2 font-medium min-w-0">
                 {opt.icon}
-                {opt.label}
+                <span className="truncate">{opt.label}</span>
               </span>
               {opt.description && layout === "stack" && (
-                <span className="mt-0.5 block text-xs text-slate-500">{opt.description}</span>
+                <span className="mt-0.5 block text-xs text-slate-500 break-words">{opt.description}</span>
               )}
             </button>
           );

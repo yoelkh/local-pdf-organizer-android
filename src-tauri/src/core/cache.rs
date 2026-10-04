@@ -19,11 +19,32 @@ impl CacheDir {
             let _ = std::fs::remove_dir_all(&thumbs);
         }
         std::fs::create_dir_all(&thumbs)?;
+
+        let imports = root.join("imports");
+        if imports.exists() {
+            let _ = std::fs::remove_dir_all(&imports);
+        }
+        std::fs::create_dir_all(&imports)?;
+
+        let exports = root.join("exports");
+        if exports.exists() {
+            let _ = std::fs::remove_dir_all(&exports);
+        }
+        std::fs::create_dir_all(&exports)?;
+
         Ok(Self { root })
     }
 
     pub fn root(&self) -> &Path {
         &self.root
+    }
+
+    pub fn imports_dir(&self) -> PathBuf {
+        self.root.join("imports")
+    }
+
+    pub fn exports_dir(&self) -> PathBuf {
+        self.root.join("exports")
     }
 
     /// Lokasi PNG thumbnail untuk (file, halaman, lebar).

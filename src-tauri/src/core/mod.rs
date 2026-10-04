@@ -8,3 +8,4 @@ pub mod fs;
 pub mod pdf;
 pub mod progress;
 pub mod state;
+pub mod platform;

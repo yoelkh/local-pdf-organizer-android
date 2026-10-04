@@ -32,9 +32,17 @@ pub fn candidate_dirs(extra: &[PathBuf]) -> Vec<PathBuf> {
     dirs
 }
 
-/// Muat PDFium dari salah satu folder kandidat, atau dari library sistem.
-/// Mengembalikan instance `Pdfium` dan lokasi library yang berhasil dimuat.
 pub fn bind(extra: &[PathBuf]) -> AppResult<(Pdfium, String)> {
+    #[cfg(target_os = "android")]
+    {
+        // Pada Android, libpdfium.so akan dipaketkan di jniLibs dan berada di path default library sistem,
+        // sehingga system linker bisa meresolve dengan nama saja.
+        match Pdfium::bind_to_library("libpdfium.so") {
+            Ok(bindings) => return Ok((Pdfium::new(bindings), "libpdfium.so".to_string())),
+            Err(e) => tracing::error!("Failed to bind to libpdfium.so: {e}"),
+        }
+    }
+
     let mut tried: Vec<String> = Vec::new();
 
     for dir in candidate_dirs(extra) {
@@ -55,7 +63,7 @@ pub fn bind(extra: &[PathBuf]) -> AppResult<(Pdfium, String)> {
         Err(e) => {
             tried.push(format!("system: {e}"));
             Err(AppError::Engine(format!(
-                "pdfium.dll tidak ditemukan. Dicoba: {}",
+                "pdfium library tidak ditemukan. Dicoba: {}",
                 tried.join("; ")
             )))
         }

@@ -23,6 +23,11 @@ pub fn handlers() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sy
         files::commands::inspect_files,
         files::commands::remove_file,
         files::commands::render_thumbnail,
+        files::commands::new_output_path,
+        files::commands::new_output_dir,
+        files::commands::save_output,
+        files::commands::save_outputs_to_downloads,
+        files::commands::share_outputs,
         files::commands::open_output,
         files::commands::reveal_output,
         // merge

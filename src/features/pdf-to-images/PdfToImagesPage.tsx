@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FileImage } from "lucide-react";
 import { useFileIntake } from "@/shared/files/useFileIntake";
-import { pickFolder } from "@/shared/files/dialogs";
+import { prepareOutputDir } from "@/shared/platform/outputs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
 import { newJobId, onProgress } from "@/shared/ipc/events";
@@ -18,6 +18,7 @@ import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
+import { isTouch } from "@/shared/platform";
 import { pdfToImages, type OutputFormat, type PdfToImagesResult } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -48,7 +49,7 @@ export function PdfToImagesPage() {
   const [pages, setPages] = useState("");
   const [zip, setZip] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
-  const [results, setResults] = useState<{ outDir: string; files: FileResult[] } | null>(null);
+  const [results, setResults] = useState<{ outDir: string; files: FileResult[]; outputs: string[] } | null>(null);
   const [viewing, setViewing] = useState<string | null>(null);
   const thumbSize = useThumbSize("pdfToImages", 220);
 
@@ -61,7 +62,7 @@ export function PdfToImagesPage() {
       toast.error(t("pdfToImages.badRange"));
       return;
     }
-    const outDir = await pickFolder();
+    const outDir = await prepareOutputDir();
     if (!outDir) return;
 
     const done: FileResult[] = [];
@@ -84,11 +85,15 @@ export function PdfToImagesPage() {
           unlisten();
         }
       }
-      setResults({ outDir, files: done });
+      const outputs = done.flatMap((f) => (f.result.zip_path ? [f.result.zip_path] : f.result.files));
+      setResults({ outDir, files: done, outputs });
       toast.success(t("pdfToImages.done", { n: done.reduce((s, f) => s + f.result.count, 0) }));
     } catch (e) {
       toast.error(describeError(e, t));
-      if (done.length > 0) setResults({ outDir, files: done });
+      if (done.length > 0) {
+        const outputs = done.flatMap((f) => (f.result.zip_path ? [f.result.zip_path] : f.result.files));
+        setResults({ outDir, files: done, outputs });
+      }
     } finally {
       setProgress(null);
     }
@@ -102,12 +107,18 @@ export function PdfToImagesPage() {
   if (results) {
     const single = results.files.length === 1 ? results.files[0].result : null;
     return (
-      <ResultPanel filePath={single?.zip_path ?? undefined} folderPath={results.outDir} onStartOver={startOver}>
+      <ResultPanel
+        outputs={results.outputs}
+        filePath={single?.zip_path ?? undefined}
+        folderPath={results.outDir}
+        onStartOver={startOver}
+      >
+
         <ul className="flex flex-col divide-y divide-slate-100 text-sm">
           {results.files.map((f) => (
-            <li key={f.result.zip_path ?? f.name} className="flex items-center justify-between gap-3 py-2">
+            <li key={f.result.zip_path ?? f.name} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3 py-2">
               <span className="min-w-0 truncate font-medium text-slate-800">{f.name}</span>
-              <span className="shrink-0 text-slate-500">
+              <span className="shrink-0 text-xs sm:text-sm text-slate-500">
                 {f.result.zip_path
                   ? t("pdfToImages.resultZipShort", { n: f.result.count, zip: baseName(f.result.zip_path) })
                   : t("pdfToImages.resultFiles", { n: f.result.count })}
@@ -139,8 +150,8 @@ export function PdfToImagesPage() {
         description={t("pdfToImages.description")}
         icon={<FileImage size={24} />}
         accent="sky"
-        sidebar={
-          hasFiles && (
+        options={
+          hasFiles ? (
             <>
               <OptionGroup<OutputFormat>
                 label={t("pdfToImages.format")}
@@ -167,7 +178,7 @@ export function PdfToImagesPage() {
                   value={pages}
                   onChange={(e) => setPages(e.target.value)}
                   placeholder={t("pdfToImages.pagesPlaceholder")}
-                  className="h-10 rounded-lg border border-slate-300 px-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                  className="h-10 rounded-lg border border-slate-300 px-3 text-base lg:text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
                 />
                 {many && <span className="text-xs text-slate-500">{t("pdfToImages.pagesAppliesAll")}</span>}
               </label>
@@ -175,14 +186,22 @@ export function PdfToImagesPage() {
                 <input type="checkbox" checked={zip} onChange={(e) => setZip(e.target.checked)} className="h-4 w-4 accent-sky-600" />
                 {many ? t("pdfToImages.zipEach") : t("pdfToImages.zip")}
               </label>
-              <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={progress !== null} icon={<FileImage size={18} />}>
-                {t("pdfToImages.action")}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={intake.clear}>
-                {t("common.clear")}
-              </Button>
             </>
-          )
+          ) : undefined
+        }
+        action={
+          hasFiles ? (
+            <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={progress !== null} icon={<FileImage size={18} />}>
+              {t("pdfToImages.action")}
+            </Button>
+          ) : undefined
+        }
+        secondary={
+          hasFiles ? (
+            <Button variant="ghost" size="sm" onClick={intake.clear}>
+              {t("common.clear")}
+            </Button>
+          ) : undefined
         }
       >
         {!hasFiles ? (
@@ -190,7 +209,7 @@ export function PdfToImagesPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="sky" compact />
-            <GridToolbar thumbSize={thumbSize}>{t("view.hintFilesPlain")}</GridToolbar>
+            <GridToolbar thumbSize={thumbSize}>{isTouch ? t("view.hintTouchFilesPlain") : t("view.hintFilesPlain")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}

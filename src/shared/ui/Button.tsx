@@ -43,7 +43,7 @@ export function Button({
       type="button"
       disabled={disabled || loading}
       className={[
-        "inline-flex items-center justify-center rounded-lg font-medium transition select-none",
+        "inline-flex items-center justify-center rounded-lg font-medium transition select-none active:brightness-95",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-400",
         "disabled:cursor-not-allowed",
         VARIANTS[variant],
@@ -53,7 +53,7 @@ export function Button({
       ].join(" ")}
       {...rest}
     >
-      {loading ? <Loader2 size={16} className="animate-spin" /> : icon}
+      {loading ? <Loader2 size={16} className="animate-spin motion-reduce:animate-none" /> : icon}
       {children}
     </button>
   );

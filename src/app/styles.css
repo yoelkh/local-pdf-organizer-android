@@ -7,16 +7,48 @@
 html,
 body,
 #root {
-  height: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  overscroll-behavior: contain;
 }
 
 body {
   @apply bg-slate-50 text-slate-800 antialiased;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: contain;
 }
 
 /* Cegah gambar thumbnail ikut ter-drag secara native */
 img {
   -webkit-user-drag: none;
   user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Kontrol sentuh: hilangkan tap highlight flash dan panggilan sentuh/seleksi lama */
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Input: izinkan pengetikan/seleksi teks, dan pastikan font-size >= 16px di mobile agar WebView tidak zoom otomatis */
+input,
+select,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+@media (max-width: 1023.98px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }

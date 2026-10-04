@@ -18,24 +18,24 @@ export function BoardActions({ board, accent }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {selectedCount === 0 ? (
-        <Button variant="secondary" size="sm" icon={<CheckSquare size={14} />} onClick={board.selectAll}>
+        <Button variant="secondary" size="sm" className="w-full justify-start" icon={<CheckSquare size={14} />} onClick={board.selectAll}>
           {t("common.selectAll")}
         </Button>
       ) : (
         <>
           <p className={`text-xs font-medium ${a.textStrong}`}>{t("board.selected", { n: selectedCount })}</p>
-          <Button variant="secondary" size="sm" icon={<RotateCw size={14} />} onClick={board.rotateSelected}>
+          <Button variant="secondary" size="sm" className="w-full justify-start" icon={<RotateCw size={14} />} onClick={board.rotateSelected}>
             {t("board.rotateSelected")}
           </Button>
-          <Button variant="danger" size="sm" icon={<Trash2 size={14} />} onClick={board.removeSelected}>
+          <Button variant="danger" size="sm" className="w-full justify-start" icon={<Trash2 size={14} />} onClick={board.removeSelected}>
             {t("common.deleteSelected", { n: selectedCount })}
           </Button>
-          <Button variant="ghost" size="sm" icon={<Square size={14} />} onClick={board.clearSelection}>
+          <Button variant="ghost" size="sm" className="w-full justify-start" icon={<Square size={14} />} onClick={board.clearSelection}>
             {t("common.deselect")}
           </Button>
         </>
       )}
-      <Button variant="ghost" size="sm" icon={<Undo2 size={14} />} onClick={board.reset}>
+      <Button variant="ghost" size="sm" className="w-full justify-start" icon={<Undo2 size={14} />} onClick={board.reset}>
         {t("common.reset")}
       </Button>
     </div>

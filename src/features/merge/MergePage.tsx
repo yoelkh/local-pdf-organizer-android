@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { LayoutGrid, Layers } from "lucide-react";
 import { useHandoffActions, useHandoffTo } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
-import { pickSavePath } from "@/shared/files/dialogs";
+import { prepareOutputFile } from "@/shared/platform/outputs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
 import type { OutputInfo } from "@/shared/ipc/types";
@@ -18,6 +18,7 @@ import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
+import { isTouch } from "@/shared/platform";
 import { mergePdfs } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -61,8 +62,9 @@ export function MergePage() {
       return;
     }
     const first = stripExtension(intake.files[0].name);
-    const outPath = await pickSavePath(`${first}_${t("merge.defaultName")}.pdf`, "pdf");
+    const outPath = await prepareOutputFile(`${first}_${t("merge.defaultName")}.pdf`, "pdf");
     if (!outPath) return;
+
 
     setBusy(true);
     try {
@@ -87,8 +89,9 @@ export function MergePage() {
 
   if (result) {
     return (
-      <ResultPanel filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
+      <ResultPanel outputs={[result.path]} filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
         <p className="text-center text-sm text-slate-600">
+
           {t("common.pages", { n: result.pages })} · {formatBytes(result.size)}
         </p>
       </ResultPanel>
@@ -113,18 +116,26 @@ export function MergePage() {
         description={t("merge.description")}
         icon={<Layers size={24} />}
         accent="rose"
-        sidebar={
-          hasFiles && (
+        options={
+          hasFiles ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("common.result")}</p>
+              <p className="mt-1 text-sm text-slate-700">
+                {t("merge.summary", { files: intake.files.length, pages: totalPages })}
+              </p>
+            </div>
+          ) : undefined
+        }
+        action={
+          hasFiles ? (
+            <Button size="lg" onClick={run} disabled={!canMerge} icon={<Layers size={18} />}>
+              {t("merge.action")}
+            </Button>
+          ) : undefined
+        }
+        secondary={
+          hasFiles ? (
             <>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("common.result")}</p>
-                <p className="mt-1 text-sm text-slate-700">
-                  {t("merge.summary", { files: intake.files.length, pages: totalPages })}
-                </p>
-              </div>
-              <Button size="lg" onClick={run} disabled={!canMerge} icon={<Layers size={18} />}>
-                {t("merge.action")}
-              </Button>
               {openInOrganize && (
                 <div className="border-t border-slate-100 pt-4">
                   <p className="mb-2 text-xs text-slate-500">{t("merge.perPageHint")}</p>
@@ -142,7 +153,7 @@ export function MergePage() {
                 {t("common.clear")}
               </Button>
             </>
-          )
+          ) : undefined
         }
       >
         {!hasFiles ? (
@@ -150,7 +161,7 @@ export function MergePage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="rose" compact />
-            <GridToolbar thumbSize={thumbSize}>{t("merge.hint")}</GridToolbar>
+            <GridToolbar thumbSize={thumbSize}>{isTouch ? t("merge.hintTouch") : t("merge.hint")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { Images } from "lucide-react";
 import { useHandoffActions } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
-import { pickSavePath } from "@/shared/files/dialogs";
+import { prepareOutputFile } from "@/shared/platform/outputs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
 import type { OutputInfo } from "@/shared/ipc/types";
@@ -21,6 +21,7 @@ import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
+import { isTouch } from "@/shared/platform";
 import { imagesToPdf, type ImagesToPdfOptions, type Margin, type Orientation, type PageSizeOption } from "./ipc";
 
 const ACCEPT = ["image"] as const;
@@ -62,7 +63,7 @@ export function ImagesToPdfPage() {
       return;
     }
     const first = stripExtension(nameOf(board.pages[0]) || "images");
-    const outPath = await pickSavePath(`${first}_${t("imagesToPdf.defaultName")}.pdf`, "pdf");
+    const outPath = await prepareOutputFile(`${first}_${t("imagesToPdf.defaultName")}.pdf`, "pdf");
     if (!outPath) return;
 
     setBusy(true);
@@ -88,8 +89,9 @@ export function ImagesToPdfPage() {
 
   if (result) {
     return (
-      <ResultPanel filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
+      <ResultPanel outputs={[result.path]} filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
         <p className="text-center text-sm text-slate-600">
+
           {t("common.pages", { n: result.pages })} · {formatBytes(result.size)}
         </p>
       </ResultPanel>
@@ -107,8 +109,8 @@ export function ImagesToPdfPage() {
         description={t("imagesToPdf.description")}
         icon={<Images size={24} />}
         accent="amber"
-        sidebar={
-          hasFiles && (
+        options={
+          hasFiles ? (
             <>
               <OptionGroup<PageSizeOption>
                 label={t("imagesToPdf.pageSize")}
@@ -152,12 +154,15 @@ export function ImagesToPdfPage() {
                 <p className="mb-2 text-sm text-slate-700">{t("imagesToPdf.pagesInResult", { n: board.pages.length })}</p>
                 <BoardActions board={board} accent="amber" />
               </div>
-
-              <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy || board.pages.length === 0} icon={<Images size={18} />}>
-                {t("imagesToPdf.action")}
-              </Button>
             </>
-          )
+          ) : undefined
+        }
+        action={
+          hasFiles ? (
+            <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy || board.pages.length === 0} icon={<Images size={18} />}>
+              {t("imagesToPdf.action")}
+            </Button>
+          ) : undefined
         }
       >
         {!hasFiles ? (
@@ -165,7 +170,7 @@ export function ImagesToPdfPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="amber" compact />
-            <GridToolbar thumbSize={thumbSize}>{t("imagesToPdf.hint")}</GridToolbar>
+            <GridToolbar thumbSize={thumbSize}>{isTouch ? t("imagesToPdf.hintTouch") : t("imagesToPdf.hint")}</GridToolbar>
             <SortableGrid
               items={board.pages}
               getId={(p) => p.key}

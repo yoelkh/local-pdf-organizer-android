@@ -52,7 +52,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2">
+      <div className="pointer-events-none fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom,0px))] left-4 right-4 sm:left-auto sm:right-4 lg:bottom-4 z-50 flex w-auto sm:w-96 max-w-[calc(100vw-2rem)] flex-col gap-2">
         {items.map((t) => {
           const { wrap, Icon } = STYLE[t.kind];
           return (

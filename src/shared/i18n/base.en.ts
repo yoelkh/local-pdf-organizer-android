@@ -5,7 +5,7 @@ export const baseEn: Dictionary = {
 
   "home.title": "Every PDF tool you need, fully offline",
   "home.subtitle":
-    "Merge, reorder, convert, and compress PDFs right on this PC. No file ever leaves your computer.",
+    "Merge, reorder, convert, and compress PDFs right on this device. No file ever leaves your device.",
 
   "common.pickFiles": "Select files",
   "common.addMore": "Add files",
@@ -62,8 +62,34 @@ export const baseEn: Dictionary = {
   "handoff.title": "Continue with this result",
   "handoff.continueTo": "Continue to {tool}",
 
+  "nav.home": "Home",
+  "common.options": "Options",
+  "common.close": "Close",
+  "common.share": "Share",
+  "common.saveTo": "Save to…",
+
+  "dropzone.tap.pdf": "Tap to choose PDF files",
+  "dropzone.tap.pdfSingle": "Tap to choose one PDF file",
+  "dropzone.tap.image": "Tap to choose images",
+  "dropzone.tapHint": "Files are read on this device and never uploaded anywhere.",
+
+  "view.hintTouchFiles": "Long-press then drag to reorder · tap the eye icon to look inside.",
+  "view.hintTouchFilesPlain": "Tap the eye icon to look inside a file.",
+  "view.hintTouchBoard": "Long-press then drag to reorder · tap to select · eye icon to view full size.",
+  "viewer.hintTouch": "Swipe to change page · pinch to zoom · double-tap to zoom in",
+
+  "common.file": "File",
   "result.title": "Done!",
   "result.savedTo": "Saved to",
+  "result.saveDownloads": "Save to Downloads",
+  "result.savedToLocation": "Saved to {location}",
+  "result.saved": "File saved successfully.",
+  "result.share": "Share",
+  "result.saveAs": "Save to…",
+  "result.open": "Open",
+  "result.useShare": "Use Share to save multiple files.",
+  "result.filesCount": "{n} files",
+
 
   "error.io": "Failed to read or write the file.",
   "error.not_found": "File not found. It may have been moved or deleted.",

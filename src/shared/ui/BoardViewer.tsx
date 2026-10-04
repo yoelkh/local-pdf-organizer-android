@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ICON_BTN =
-  "grid h-9 w-9 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 disabled:opacity-30 disabled:hover:bg-transparent";
+  "grid h-11 w-11 place-items-center rounded-lg text-slate-200 transition hover:bg-white/15 active:bg-white/25 disabled:opacity-30 disabled:hover:bg-transparent";
 
 /**
  * Penampil layar penuh yang terikat ke sebuah papan halaman: putar, hapus,

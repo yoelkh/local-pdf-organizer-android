@@ -5,3 +5,20 @@ src-tauri/gen/schemas/
 *.log
 .DS_Store
 /samples/
+
+# Android (hasil build; sumber gen/android tetap dilacak)
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/build/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/app/.cxx/
+src-tauri/gen/android/app/src/main/assets/
+src-tauri/gen/android/app/src/main/jniLibs/
+src-tauri/gen/android/app/tauri.properties
+src-tauri/gen/android/buildSrc/build/
+src-tauri/gen/android/buildSrc/.gradle/
+src-tauri/gen/android/local.properties
+src-tauri/gen/android/tauri.settings.gradle
+src-tauri/gen/android/.tauri/
+src-tauri/gen/android/key.properties
+src-tauri/gen/android/keystore.properties
+*.iml

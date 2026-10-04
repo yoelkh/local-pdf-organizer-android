@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { LayoutGrid, X } from "lucide-react";
 import { useHandoffActions } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
-import { pickSavePath } from "@/shared/files/dialogs";
+import { prepareOutputFile } from "@/shared/platform/outputs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
 import type { OutputInfo } from "@/shared/ipc/types";
@@ -21,6 +21,7 @@ import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
+import { isTouch } from "@/shared/platform";
 import { organizePdf } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -50,7 +51,7 @@ export function OrganizePage() {
       return;
     }
     const first = stripExtension(intake.files[0].name);
-    const outPath = await pickSavePath(`${first}_${t("organize.defaultName")}.pdf`, "pdf");
+    const outPath = await prepareOutputFile(`${first}_${t("organize.defaultName")}.pdf`, "pdf");
     if (!outPath) return;
 
     setBusy(true);
@@ -75,8 +76,9 @@ export function OrganizePage() {
 
   if (result) {
     return (
-      <ResultPanel filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
+      <ResultPanel outputs={[result.path]} filePath={result.path} onStartOver={startOver} nextActions={nextActions}>
         <p className="text-center text-sm text-slate-600">
+
           {t("common.pages", { n: result.pages })} · {formatBytes(result.size)}
         </p>
       </ResultPanel>
@@ -92,8 +94,8 @@ export function OrganizePage() {
         description={t("organize.description")}
         icon={<LayoutGrid size={24} />}
         accent="violet"
-        sidebar={
-          hasFiles && (
+        options={
+          hasFiles ? (
             <>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("organize.sources")}</p>
@@ -126,12 +128,15 @@ export function OrganizePage() {
               <div className="border-t border-slate-100 pt-4">
                 <BoardActions board={board} accent="violet" />
               </div>
-
-              <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy || board.pages.length === 0} icon={<LayoutGrid size={18} />}>
-                {t("organize.action")}
-              </Button>
             </>
-          )
+          ) : undefined
+        }
+        action={
+          hasFiles ? (
+            <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy || board.pages.length === 0} icon={<LayoutGrid size={18} />}>
+              {t("organize.action")}
+            </Button>
+          ) : undefined
         }
       >
         {!hasFiles ? (
@@ -139,7 +144,7 @@ export function OrganizePage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="violet" compact />
-            <GridToolbar thumbSize={thumbSize}>{t("organize.hint")}</GridToolbar>
+            <GridToolbar thumbSize={thumbSize}>{isTouch ? t("view.hintTouchBoard") : t("organize.hint")}</GridToolbar>
             <SortableGrid
               items={board.pages}
               getId={(p) => p.key}

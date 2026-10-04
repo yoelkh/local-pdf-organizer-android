@@ -46,6 +46,28 @@ cukup memakai ketiganya.
 saat alat dibuka. `src/features/handoff.ts` (boleh diimpor fitur, seperti
 `registry`) membangun aksi "Lanjutkan ke …" dari `ToolDefinition.accepts`.
 
+## Satu basis kode, dua platform (Windows + Android)
+
+Android dibangun dari repo yang sama lewat target Android Tauri 2 (`src-tauri/gen/android`).
+Perbedaan platform dikurung di satu "seam" per sisi; kode fitur tidak bercabang per platform.
+
+- **Frontend**: `src/shared/platform/index.ts` (`isMobile`, `isTouch`, `useIsCompact()`) dan
+  `src/shared/platform/outputs.ts` (`prepareOutputFile`, `prepareOutputDir`, `prepareOutputFiles`,
+  `saveOutputAs`, `saveOutputsToDownloads`, `shareOutputs`). Halaman alat memakai fungsi itu, lalu
+  menyerahkan daftar file hasil ke `ResultPanel` (`outputs`), yang memilih aksi sesuai platform.
+- **Backend**: `src-tauri/src/core/platform/` (`import.rs`, `export.rs`, `android.rs`) dan command
+  tipis di `features/files`. Service fitur selalu menerima path nyata.
+- **Android**: picker mengembalikan URI `content://`. `inspect_files` menyalinnya ke
+  `<cache>/imports/`; hasil ditulis ke `<cache>/exports/` lalu dikirim lewat plugin Kotlin
+  `FileIoPlugin` (MediaStore, FileProvider). Kontrak lengkap: `docs/android/IO_CONTRACT.md`.
+- **Tata letak**: `ToolLayout` menerima slot `options`, `action`, `secondary`. Di layar ≥ `lg`
+  ketiganya tampil sebagai kartu samping; di bawahnya `action` menjadi bilah bawah dan sisanya masuk
+  `BottomSheet`. Navigasi di layar kecil memakai `BottomNav`.
+- **Konfigurasi Tauri**: `tauri.conf.json` (umum), `tauri.windows.conf.json` (jendela, NSIS,
+  `pdfium.dll`), `tauri.android.conf.json`. File platform digabung di atas file umum saat build.
+
+Cara build dan batasan mesin: `docs/android/BUILD.md`.
+
 ## Registrasi terpusat
 
 - **Backend**: `src-tauri/src/features/mod.rs` → `handlers()` memuat `tauri::generate_handler![...]`

@@ -11,16 +11,16 @@ export function Header() {
   const active = tools.find((tool) => tool.route === pathname);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-[1700px] items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-rose-500 text-white">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur pt-[env(safe-area-inset-top,0px)] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)]">
+      <div className="mx-auto flex h-14 w-full max-w-[1700px] items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900 min-w-0">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-rose-500 text-white">
             <FileText size={18} />
           </span>
-          <span>{t("app.name")}</span>
+          <span className="truncate">{t("app.name")}</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        <nav className="hidden items-center gap-1 lg:flex">
           {tools.map((tool) => {
             const isActive = tool.id === active?.id;
             const accent = accentClasses(tool.accent);

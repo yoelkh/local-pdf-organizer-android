@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Minimize2 } from "lucide-react";
 import { useHandoffActions } from "@/features/handoff";
 import { useFileIntake } from "@/shared/files/useFileIntake";
-import { pickFolder, pickSavePath } from "@/shared/files/dialogs";
+import { prepareOutputFiles } from "@/shared/platform/outputs";
 import { useT } from "@/shared/i18n/useT";
 import { describeError } from "@/shared/i18n/errors";
-import { formatBytes, joinPath, parentDir, savingsPercent, stripExtension } from "@/shared/lib/format";
+import { formatBytes, parentDir, savingsPercent, stripExtension } from "@/shared/lib/format";
+
 import { Button } from "@/shared/ui/Button";
 import { Dropzone } from "@/shared/ui/Dropzone";
 import { FileCard } from "@/shared/ui/FileCard";
@@ -18,6 +19,7 @@ import { SortableGrid } from "@/shared/ui/SortableGrid";
 import { useToast } from "@/shared/ui/Toast";
 import { ToolLayout } from "@/shared/ui/ToolLayout";
 import { useThumbSize } from "@/shared/ui/useThumbSize";
+import { isTouch } from "@/shared/platform";
 import { compressPdf, type CompressLevel, type CompressResult } from "./ipc";
 
 const ACCEPT = ["pdf"] as const;
@@ -41,22 +43,14 @@ export function CompressPage() {
     const files = intake.files;
     if (files.length === 0) return;
 
-    // Satu file → dialog simpan; banyak file → pilih folder, nama diberi akhiran.
-    let targets: { id: string; outPath: string; name: string }[];
-    if (files.length === 1) {
-      const f = files[0];
-      const out = await pickSavePath(`${stripExtension(f.name)}${t("compress.suffix")}.pdf`, "pdf");
-      if (!out) return;
-      targets = [{ id: f.id, outPath: out, name: f.name }];
-    } else {
-      const dir = await pickFolder();
-      if (!dir) return;
-      targets = files.map((f) => ({
-        id: f.id,
-        outPath: joinPath(dir, `${stripExtension(f.name)}${t("compress.suffix")}.pdf`),
-        name: f.name,
-      }));
-    }
+    const names = files.map((f) => `${stripExtension(f.name)}${t("compress.suffix")}.pdf`);
+    const outPaths = await prepareOutputFiles(names, "pdf");
+    if (!outPaths) return;
+    const targets = files.map((f, i) => ({
+      id: f.id,
+      outPath: outPaths[i],
+      name: f.name,
+    }));
 
     const done: CompressResult[] = [];
     try {
@@ -84,40 +78,45 @@ export function CompressPage() {
     const before = results.reduce((s, r) => s + r.original_size, 0);
     const after = results.reduce((s, r) => s + r.compressed_size, 0);
     const single = results.length === 1 ? results[0] : null;
+    const outputs = results.map((r) => r.path);
     return (
       <ResultPanel
         title={t("compress.resultTitle")}
+        outputs={outputs}
         filePath={single?.path}
         folderPath={single ? undefined : parentDir(results[0].path)}
         onStartOver={startOver}
         nextActions={nextActions}
       >
-        <table className="w-full text-sm">
-          <tbody>
-            {results.map((r) => {
-              const pct = savingsPercent(r.original_size, r.compressed_size);
-              return (
-                <tr key={r.path} className="border-b border-slate-100 last:border-0">
-                  <td className="max-w-[16rem] truncate py-2 pr-3 font-medium text-slate-800" title={r.path}>
-                    {r.name}
-                  </td>
-                  <td className="whitespace-nowrap py-2 pr-3 text-slate-500">
-                    {formatBytes(r.original_size)} → {formatBytes(r.compressed_size)}
-                  </td>
-                  <td className="whitespace-nowrap py-2 text-right">
-                    {r.unchanged ? (
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{t("compress.unchanged")}</span>
-                    ) : (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                        {t("compress.saved", { pct })}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+
+        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
+          <table className="w-full text-sm">
+            <tbody>
+              {results.map((r) => {
+                const pct = savingsPercent(r.original_size, r.compressed_size);
+                return (
+                  <tr key={r.path} className="border-b border-slate-100 last:border-0">
+                    <td className="max-w-[7rem] sm:max-w-[16rem] truncate py-2 pr-2 font-medium text-slate-800" title={r.path}>
+                      {r.name}
+                    </td>
+                    <td className="whitespace-nowrap py-2 pr-2 text-xs sm:text-sm text-slate-500">
+                      {formatBytes(r.original_size)} → {formatBytes(r.compressed_size)}
+                    </td>
+                    <td className="whitespace-nowrap py-2 text-right">
+                      {r.unchanged ? (
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{t("compress.unchanged")}</span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                          {t("compress.saved", { pct })}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
         {results.length > 1 && (
           <p className="mt-3 text-right text-sm font-medium text-slate-700">
             {t("compress.total", { before: formatBytes(before), after: formatBytes(after) })}{" "}
@@ -142,8 +141,8 @@ export function CompressPage() {
         description={t("compress.description")}
         icon={<Minimize2 size={24} />}
         accent="emerald"
-        sidebar={
-          hasFiles && (
+        options={
+          hasFiles ? (
             <>
               <OptionGroup<CompressLevel>
                 label={t("compress.level")}
@@ -158,14 +157,22 @@ export function CompressPage() {
                 }))}
               />
               <p className="text-xs text-slate-500">{t("compress.note")}</p>
-              <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy !== null} icon={<Minimize2 size={18} />}>
-                {t("compress.action")}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={intake.clear}>
-                {t("common.clear")}
-              </Button>
             </>
-          )
+          ) : undefined
+        }
+        action={
+          hasFiles ? (
+            <Button size="lg" accentBg={PRIMARY} onClick={run} disabled={busy !== null} icon={<Minimize2 size={18} />}>
+              {t("compress.action")}
+            </Button>
+          ) : undefined
+        }
+        secondary={
+          hasFiles ? (
+            <Button variant="ghost" size="sm" onClick={intake.clear}>
+              {t("common.clear")}
+            </Button>
+          ) : undefined
         }
       >
         {!hasFiles ? (
@@ -173,7 +180,7 @@ export function CompressPage() {
         ) : (
           <div className="flex flex-col gap-4">
             <Dropzone accept={[...ACCEPT]} isDragging={intake.isDragging} busy={intake.busy} onPick={intake.pick} accent="emerald" compact />
-            <GridToolbar thumbSize={thumbSize}>{t("view.hintFilesPlain")}</GridToolbar>
+            <GridToolbar thumbSize={thumbSize}>{isTouch ? t("view.hintTouchFilesPlain") : t("view.hintFilesPlain")}</GridToolbar>
             <SortableGrid
               items={intake.files}
               getId={(f) => f.id}

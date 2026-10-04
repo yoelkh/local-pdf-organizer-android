@@ -8,13 +8,13 @@ import { accentClasses } from "@/shared/lib/colors";
 export function HomePage() {
   const { t } = useT();
   return (
-    <div className="flex flex-col gap-10">
-      <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("home.title")}</h1>
-        <p className="mt-3 text-slate-500">{t("home.subtitle")}</p>
+    <div className="flex flex-col gap-6 sm:gap-10 pb-6 lg:pb-0">
+      <header className="mx-auto max-w-2xl text-center px-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">{t("home.title")}</h1>
+        <p className="mt-2 sm:mt-3 text-sm sm:text-base text-slate-500">{t("home.subtitle")}</p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {tools.map((tool) => {
           const a = accentClasses(tool.accent);
           const Icon = tool.icon;
@@ -22,7 +22,7 @@ export function HomePage() {
             <Link
               key={tool.id}
               to={tool.route}
-              className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+              className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4.5 sm:p-5 shadow-sm transition active:scale-[0.99] active:bg-slate-50/80 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <span className={`grid h-12 w-12 place-items-center rounded-xl ${a.softBg} ${a.text}`}>
                 <Icon size={24} />

@@ -6,7 +6,7 @@ export const baseId: Dictionary = {
 
   "home.title": "Semua alat PDF Anda, sepenuhnya offline",
   "home.subtitle":
-    "Gabungkan, susun ulang, konversi, dan kompres PDF langsung di PC ini. Tidak ada file yang meninggalkan komputer Anda.",
+    "Gabungkan, susun ulang, konversi, dan kompres PDF langsung di perangkat ini. Tidak ada file yang meninggalkan perangkat Anda.",
 
   "common.pickFiles": "Pilih file",
   "common.addMore": "Tambah file",
@@ -63,8 +63,34 @@ export const baseId: Dictionary = {
   "handoff.title": "Lanjutkan dengan hasil ini",
   "handoff.continueTo": "Lanjutkan ke {tool}",
 
+  "nav.home": "Beranda",
+  "common.options": "Pengaturan",
+  "common.close": "Tutup",
+  "common.share": "Bagikan",
+  "common.saveTo": "Simpan ke…",
+
+  "dropzone.tap.pdf": "Ketuk untuk memilih file PDF",
+  "dropzone.tap.pdfSingle": "Ketuk untuk memilih satu file PDF",
+  "dropzone.tap.image": "Ketuk untuk memilih gambar",
+  "dropzone.tapHint": "File dibaca langsung di perangkat ini, tidak diunggah ke mana pun.",
+
+  "view.hintTouchFiles": "Tekan lama lalu seret untuk mengurutkan · ketuk ikon mata untuk melihat isinya.",
+  "view.hintTouchFilesPlain": "Ketuk ikon mata untuk melihat isi file.",
+  "view.hintTouchBoard": "Tekan lama lalu seret untuk mengurutkan · ketuk untuk memilih · ikon mata untuk melihat ukuran besar.",
+  "viewer.hintTouch": "Geser untuk pindah halaman · cubit untuk zoom · ketuk dua kali untuk memperbesar",
+
+  "common.file": "File",
   "result.title": "Selesai!",
   "result.savedTo": "Disimpan di",
+  "result.saveDownloads": "Simpan ke Unduhan",
+  "result.savedToLocation": "Disimpan di {location}",
+  "result.saved": "File berhasil disimpan.",
+  "result.share": "Bagikan",
+  "result.saveAs": "Simpan ke…",
+  "result.open": "Buka",
+  "result.useShare": "Gunakan Bagikan untuk menyimpan beberapa file.",
+  "result.filesCount": "{n} file",
+
 
   "error.io": "Gagal membaca atau menulis file.",
   "error.not_found": "File tidak ditemukan. Mungkin sudah dipindah atau dihapus.",
